@@ -12,6 +12,6 @@ I would like to access it on my phone, but also from any other device. Ideally, 
 
 # TODO
 
-- [ ] Save/get weight from database
+- [x] Save/get weight from database
 - [ ] Create an API that allows me to POST / GET weights
 - [ ] Make accessible online
