@@ -1,59 +1,31 @@
-use rusqlite::{params, Connection, Result};
-use std::env;
-extern crate dotenv;
+mod api;
+mod db;
+mod env;
+use actix_web::{web, App, HttpServer};
+use rusqlite::Connection;
+use server::env::load_environment_variables;
+use std::sync::Arc;
+use std::sync::Mutex;
 
-fn initialize_db(conn: &Connection) -> Result<()> {
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS weights (id INTEGER PRIMARY KEY, weight REAL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)",
-        [],
-    )?;
-    Ok(())
-}
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    load_environment_variables(None);
 
-fn save_weight(conn: &Connection, weight: f64) -> Result<()> {
-    conn.execute("INSERT INTO weights (weight) VALUES (?1)", params![weight])?;
-    Ok(())
-}
+    let db_path = std::env::var("DB_PATH").expect("DB_PATH must be set");
+    let conn = Connection::open(db_path).expect("Cannot open database");
+    let conn = Arc::new(Mutex::new(conn));
 
-fn get_weights(conn: &Connection) -> Result<Vec<(i32, f64, String)>> {
-    let mut stmt = conn.prepare("SELECT id, weight, timestamp FROM weights")?;
-    let weight_iter = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))?;
-    let weights: Result<Vec<(i32, f64, String)>> = weight_iter.collect();
-    weights
+    HttpServer::new(move || {
+        App::new().app_data(web::Data::new(conn.clone())).service(
+            web::resource("/weights")
+                .route(web::post().to(api::add_weight))
+                .route(web::get().to(api::get_weights)),
+        )
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use chrono::NaiveDateTime;
-
-    #[test]
-    fn test_save_weight() {
-        let conn = Connection::open_in_memory().unwrap();
-        initialize_db(&conn).unwrap();
-        assert!(save_weight(&conn, 70.5).is_ok());
-    }
-
-    #[test]
-    fn test_get_weights() {
-        let conn = Connection::open_in_memory().unwrap();
-        initialize_db(&conn).unwrap();
-        save_weight(&conn, 70.5).unwrap();
-        let weights = get_weights(&conn).unwrap();
-        let (id, weight, timestamp) = &weights[0];
-        assert_eq!(*id, 1);
-        assert_eq!(*weight, 70.5);
-
-        // Validate the timestamp
-        assert!(NaiveDateTime::parse_from_str(&timestamp, "%Y-%m-%d %H:%M:%S").is_ok());
-    }
-}
-
-fn main() -> Result<()> {
-    dotenv::dotenv().ok();
-    let db_path = env::var("DB_PATH").expect("DB_PATH must be set");
-    let conn = Connection::open(db_path)?;
-    initialize_db(&conn)?;
-
-    Ok(())
-}
+mod tests;

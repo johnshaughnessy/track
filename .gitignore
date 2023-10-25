@@ -6,5 +6,5 @@ server/Cargo.lock
 *.swp
 .DS_Store
 
-db/
+./db/
 .*.sqlite3
