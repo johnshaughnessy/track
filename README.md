@@ -14,4 +14,13 @@ I would like to access it on my phone, but also from any other device. Ideally, 
 
 - [x] Save/get weight from database
 - [x] Create an API that allows me to POST / GET weights
-- [ ] Make accessible online
+- [x] Make accessible online
+- [ ] Create github action to auto-deploy code to production on commit to main
+- [ ] Create API to delete weights
+- [ ] Create UI to list weights
+- [ ] Create UI to add weight
+- [ ] Create UI to graph weights over time
+- [ ] Create UI to delete weight
+- [ ] Create UI to override weight timestamp
+- [ ] Add authentication
+- [ ] Add tls / https

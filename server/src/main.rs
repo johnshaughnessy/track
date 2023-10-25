@@ -12,6 +12,9 @@ async fn main() -> std::io::Result<()> {
     load_environment_variables(None);
 
     let db_path = std::env::var("DB_PATH").expect("DB_PATH must be set");
+    let ip_address = std::env::var("IP_ADDRESS").expect("IP_ADDRESS must be set");
+    let port = std::env::var("PORT").expect("PORT must be set");
+
     let conn = Connection::open(db_path).expect("Cannot open database");
     let conn = Arc::new(Mutex::new(conn));
 
@@ -22,7 +25,7 @@ async fn main() -> std::io::Result<()> {
                 .route(web::get().to(api::get_weights)),
         )
     })
-    .bind("127.0.0.1:8080")?
+    .bind(format!("{}:{}", ip_address, port))?
     .run()
     .await
 }
