@@ -34,112 +34,42 @@ To list weights, the client GETs /api/weights. Paging, filtering, etc will be wo
 
 ```
 
-To add weights, the client POSTs this data as json to /api/weights :
+To add a weight, the client POSTs this data as json to /api/weights :
 
 ```json
 {
-  add_weights : [
-    {
-      weight_kg: 70,
-      measured_at: <timestamp>
-    },
-    ...
-  ]
+  weight_kg: 70,
+  measured_at: <timestamp>
 }
 ```
 
-To update weights, the client POSTs (or PATCHes) this data as json to /api/weights :
+To update a weight, the client PATCHes this data as json to /api/weights :
 
 ```json
 {
-  update_weights : [
-    {
-      id: 10,
-      weight_kg: 70,
-      measured_at: <timestamp>
-    },
-    ...
-  ]
+  id: 10,
+  weight_kg: 70,
+  measured_at: <timestamp>
 }
 ```
 
-Timestamp formats (in the database and the client) will be worked out in the future.
-
-To delete weights, the client POSTS this data to /api/weights :
+The server response to a successful add or an update with a json payload describing the weight (including its ID):
 
 ```json
 {
-  "delete_weights": [10, 12, 13]
+  id: 23,
+  weight_kg: 70,
+  measured_at: <timestamp>
 }
 ```
 
-The numbers in this example are weight record IDs.
+To delete a weight, the client sends a DELETE to /api/weight/<weight_id> .
 
-These requests can be combined. For example, this is valid:
-
-```json
-{
-
-  add_weights : [
-    {
-      weight_kg: 70,
-      measured_at: <timestamp>
-    },
-  ],
-
-  update_weights: [
-    {
-      id: 10,
-      weight_kg: 70,
-      measured_at: <timestamp>
-    }
-  ],
-
-  delete_weights: [ 12, 13 ]
-
-}
-```
-
-The server will respond to POST requests with a json payload indicating the results of the requested operations, or any errors.
-
-```json
-{
-  add_weights : {
-    status: 200,
-    data: [
-      {
-        id: 23,
-        weight_kg: 70,
-        measured_at: <timestamp>
-      }
-    ]
-  },
-  "update_weights" : [
-    {
-      status: 200,
-      data: {
-        id: 10,
-        weight_kg: 70,
-        measured_at: <timestamp>
-      }
-    }
-  ],
-  "delete_weights" : [
-    {
-      status: 200,
-      id: 12,
-    },
-    {
-      status: 200,
-      id: 13,
-    },
-  ]
-}
-
-```
+HTTP status codes are returned in the [usual way](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status).
 
 The server is written in rust.
 The client is written in a mixture of rust (compiled to wasm) and some html, css, and javascript as needed.
+Timestamps are ISO 8601.
 
 # TODO
 
@@ -158,5 +88,5 @@ The client is written in a mixture of rust (compiled to wasm) and some html, css
 - [ ] Create UI to graph weights over time
 - [ ] Add authentication
 - [ ] Add tls / https
-- [ ] Decide on timestamp format(s)
+- [x] Decide on timestamp format(s)
 - [ ] Add paging and filtering to GET /weights
