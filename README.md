@@ -80,6 +80,12 @@ Timestamps are the number of non-leap seconds since January 1, 1970 0:00:00 UTC 
 - [x] Create github workflow to auto-build docker image on commit to main
 - [x] Create github workflow to (manually) ship latest docker image to production server
 - [x] Decide on timestamp format(s)
+- [x] Switch to postgres (from sqlite)
+- [x] Manage the postgres and server processes with docker compose
+- [x] Set up the dev environment to use docker compose
+- [x] Configure prod variables and secrets for github actions/workflows
+- [ ] (Re)Create API to list weights
+- [ ] (Re)Create API to add weights
 - [ ] Create API to delete weights
 - [ ] Create API to update weights
 - [ ] Create client to list, add, delete, update weights
