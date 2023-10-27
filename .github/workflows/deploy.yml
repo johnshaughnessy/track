@@ -6,6 +6,7 @@ on: workflow_dispatch
 jobs:
   deploy_to_server:
     runs-on: ubuntu-latest
+    environment: prod
     steps:
       - name: Setup SSH
         run: |
@@ -14,14 +15,32 @@ jobs:
           chmod 600 ~/.ssh/private_key.pem
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to server
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Copy docker compose files
         run: |
-          ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<'ENDSSH'
-            export APP_ENV=$APP_ENV
-            export HOST_PORT=${{ secrets.HOST_PORT }}
+          ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<EOF
+            rm -r ./docker || true
+          EOF
+          scp -i ~/.ssh/private_key.pem -r ./docker/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/docker
+          echo "creating alias script"
+          ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<"ENDSSH"
+            echo "dc() {" > docker/alias
+            echo "    APP_ENV=${{ vars.APP_ENV }} HOST_PORT=${{ vars.HOST_PORT }} POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} docker compose -f docker/base.yml -f docker/prod.yml \"\$@\"" >> docker/alias
+            echo "}" >> docker/alias
+            chmod +x docker/alias
+          ENDSSH
+          echo "created alias script"
+
+      - name: Prepare and Deploy
+        run: |
+          ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<"ENDSSH"
+            export APP_ENV=${{ vars.APP_ENV }}
+            export HOST_PORT=${{ vars.HOST_PORT }}
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-            docker-compose pull
-            docker-compose down
-            docker-compose up
+            docker compose -f docker/base.yml -f docker/prod.yml pull
+            docker compose -f docker/base.yml -f docker/prod.yml down
+            docker compose -f docker/base.yml -f docker/prod.yml up -d
           ENDSSH
