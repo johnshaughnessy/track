@@ -20,7 +20,7 @@ The server is the authority of these fields:
 
 To list weights, the client GETs /api/weights. Paging, filtering, etc will be worked out in the future. For now, no parameters are expected. The server replies with this payload:
 
-```json
+```js
 {
   weights: [
     {
@@ -36,7 +36,7 @@ To list weights, the client GETs /api/weights. Paging, filtering, etc will be wo
 
 To add a weight, the client POSTs this data as json to /api/weights :
 
-```json
+```js
 {
   weight_kg: 70,
   measured_at: <timestamp>
@@ -45,7 +45,7 @@ To add a weight, the client POSTs this data as json to /api/weights :
 
 To update a weight, the client PATCHes this data as json to /api/weights :
 
-```json
+```js
 {
   id: 10,
   weight_kg: 70,
@@ -55,7 +55,7 @@ To update a weight, the client PATCHes this data as json to /api/weights :
 
 The server response to a successful add or an update with a json payload describing the weight (including its ID):
 
-```json
+```js
 {
   id: 23,
   weight_kg: 70,
