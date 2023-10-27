@@ -1,5 +1,5 @@
 ---
-name: Build and Push Docker Image
+name: Build server image
 
 on:
   push:
@@ -13,12 +13,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Login to DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Build and push Docker image
+      - name: Build Docker image and push to DockerHub
         run: |
           cd server
           docker build -t johnshaughnessy/track-server .

@@ -1,5 +1,5 @@
 ---
-name: Deploy to server
+name: Deploy server image
 
 on: workflow_dispatch
 
@@ -16,7 +16,7 @@ jobs:
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Copy docker compose files
         run: |
