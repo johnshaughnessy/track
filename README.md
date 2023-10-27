@@ -77,7 +77,8 @@ Timestamps are ISO 8601.
 - [x] Create API to list weights
 - [x] Create API to add weights
 - [x] Make accessible online
-- [ ] Create github action to auto-deploy code to production on commit to main
+- [x] Create github workflow to auto-build docker image on commit to main
+- [x] Create github workflow to (manually) ship latest docker image to production server
 - [ ] Create client to list, add, delete, update weights
 - [ ] Create API to delete weights
 - [ ] Create API to update weights
