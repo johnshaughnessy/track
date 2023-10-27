@@ -1,30 +1,24 @@
-use std::sync::{Arc, Mutex};
-
-use crate::db;
+use crate::db::{self, CreateWeightPayload};
 use actix_web::{web, HttpResponse, Responder};
-use rusqlite::Connection;
-use serde_derive::Deserialize;
-extern crate serde_derive;
-
-#[derive(Deserialize)]
-pub struct WeightPayload {
-    weight_kg: f64,
-}
+use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use diesel::PgConnection;
 
 pub async fn add_weight(
-    weight: web::Json<WeightPayload>,
-    db_conn: web::Data<Arc<Mutex<Connection>>>,
+    weight: web::Json<CreateWeightPayload>,
+    pool: web::Data<Pool<ConnectionManager<PgConnection>>>,
 ) -> impl Responder {
-    let db_conn = db_conn.get_ref().lock().unwrap();
-    match db::save_weight(&db_conn, weight.weight_kg) {
+    let conn = pool.get().unwrap();
+    let weight = weight.into_inner();
+    match db::save_weight(&conn, &weight) {
         Ok(_) => HttpResponse::Ok().body(format!("Weight added: {}", weight.weight_kg)),
         Err(_) => HttpResponse::InternalServerError().body("Error adding weight."),
     }
 }
 
-pub async fn get_weights(db_conn: web::Data<Arc<Mutex<Connection>>>) -> impl Responder {
-    let db_conn = db_conn.get_ref().lock().unwrap();
-    match db::get_weights(&db_conn) {
+pub async fn get_weights(pool: web::Data<Pool<ConnectionManager<PgConnection>>>) -> impl Responder {
+    let conn: PooledConnection<ConnectionManager<PgConnection>> = pool.get().unwrap();
+
+    match db::get_weights(&conn) {
         Ok(weights) => HttpResponse::Ok().json(weights),
         Err(_) => HttpResponse::InternalServerError().body("Error retrieving weights."),
     }

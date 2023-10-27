@@ -69,7 +69,7 @@ HTTP status codes are returned in the [usual way](https://developer.mozilla.org/
 
 The server is written in rust.
 The client is written in a mixture of rust (compiled to wasm) and some html, css, and javascript as needed.
-Timestamps are ISO 8601.
+Timestamps are the number of non-leap seconds since January 1, 1970 0:00:00 UTC (aka “UNIX timestamp”).
 
 # TODO
 
@@ -79,6 +79,7 @@ Timestamps are ISO 8601.
 - [x] Make accessible online
 - [x] Create github workflow to auto-build docker image on commit to main
 - [x] Create github workflow to (manually) ship latest docker image to production server
+- [x] Decide on timestamp format(s)
 - [ ] Create API to delete weights
 - [ ] Create API to update weights
 - [ ] Create client to list, add, delete, update weights
@@ -89,5 +90,4 @@ Timestamps are ISO 8601.
 - [ ] Create UI to graph weights over time
 - [ ] Add authentication
 - [ ] Add tls / https
-- [x] Decide on timestamp format(s)
 - [ ] Add paging and filtering to GET /weights

@@ -2,18 +2,15 @@
 name = "server"
 version = "0.1.0"
 edition = "2021"
-
-[[bin]]
-name = "gen-db"
-path = "src/bin/gen_db.rs"
+default-run = "server"
 
 [dependencies]
 actix-rt = "2.9.0"
 actix-web = "4.4.0"
 chrono = "0.4.31"
+diesel = { version = "2.1.0", features = ["postgres", "r2d2"] }
 dotenv = "0.15.0"
 env_logger = "0.10.0"
-rusqlite = "0.29.0"
 serde = "1.0.189"
 serde_derive = "1.0.189"
 serde_json = "1.0.107"

@@ -1,0 +1,5 @@
+FROM rust:1.73-slim-buster as builder
+WORKDIR /app
+RUN apt-get update && apt-get install -y build-essential libpq-dev
+COPY ./scripts/sleep.sh /usr/bin/sleep.sh
+CMD ["/usr/bin/sleep.sh"]

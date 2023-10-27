@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# Usage:
+#   source ./bin/alias-docker-compose
+#
+# Then you can run docker-compose commands such as
+#
+#   dc down
+#   dc up -d --build
+#   dc ps
+#   dc exec -it track-server bash
+
+dc() {
+    script_path=$(readlink -f "$0")
+    docker_path=$(dirname $script_path)/docker/
+    APP_ENV=dev HOST_PORT=8080 POSTGRES_PASSWORD=password docker-compose -f "$docker_path/base.yml" -f "$docker_path/dev.yml" "$@"
+}

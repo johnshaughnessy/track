@@ -1,0 +1,8 @@
+version: "3.1"
+services:
+  track-server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ../server:/app
