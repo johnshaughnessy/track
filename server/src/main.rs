@@ -3,14 +3,11 @@ mod db;
 mod env;
 use actix_web::{web, App, HttpServer};
 use rusqlite::Connection;
-use server::env::load_environment_variables;
 use std::sync::Arc;
 use std::sync::Mutex;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    load_environment_variables(None);
-
     let db_path = std::env::var("DB_PATH").expect("DB_PATH must be set");
     let ip_address = std::env::var("IP_ADDRESS").expect("IP_ADDRESS must be set");
     let port = std::env::var("PORT").expect("PORT must be set");

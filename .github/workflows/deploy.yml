@@ -1,0 +1,32 @@
+---
+name: Deploy to server
+
+on: workflow_dispatch
+
+jobs:
+  deploy_to_server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/private_key.pem
+          chmod 600 ~/.ssh/private_key.pem
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      - name: Deploy to server
+        run: |
+          ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<'ENDSSH'
+            docker pull johnshaughnessy/track-server
+            docker container stop track-container || true
+            docker container rm track-container || true
+            docker run \
+              -d \
+              --name track-container \
+              -p 80:8080 \
+              -v track-server-data:/data \
+              --env APP_ENV=prod \
+              --env DB_PATH=/data/prod_db.sqlite3 \
+              --env IP_ADDRESS=0.0.0.0 \
+              --env PORT=8080 \
+              johnshaughnessy/track-server
+          ENDSSH

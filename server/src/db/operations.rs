@@ -1,5 +1,6 @@
 use rusqlite::{params, Connection, Result};
 
+#[allow(unused)]
 pub fn initialize_db(conn: &Connection) -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS weights (id INTEGER PRIMARY KEY, weight REAL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)",

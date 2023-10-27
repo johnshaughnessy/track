@@ -14,7 +14,7 @@ use server::env::{load_environment_variables, AppEnvironment};
 
 #[actix_rt::test]
 async fn test_get_weights() {
-    load_environment_variables(Some(AppEnvironment::Test));
+    load_environment_variables(AppEnvironment::Test);
     let db_path = env::var("DB_PATH").expect("DB_PATH environment variable not set.");
     if !Path::new(&db_path).exists() {
         panic!("Test database does not exist at path: {}.\n Generate a test database with: \n    APP_ENV=test cargo run --bin gen_db", db_path);
@@ -38,7 +38,7 @@ async fn test_get_weights() {
 
 #[actix_rt::test]
 async fn test_add_weight() {
-    load_environment_variables(Some(AppEnvironment::Test));
+    load_environment_variables(AppEnvironment::Test);
     let db_path = env::var("DB_PATH").expect("DB_PATH environment variable not set.");
     if !Path::new(&db_path).exists() {
         panic!("Test database does not exist at path: {}.\n Generate a test database with: \n    APP_ENV=test cargo run --bin gen_db", db_path);

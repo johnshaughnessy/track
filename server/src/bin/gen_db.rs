@@ -2,7 +2,6 @@ extern crate rusqlite;
 extern crate server;
 
 use rusqlite::{Connection, Error as RusqliteError};
-use server::env::load_environment_variables;
 use std::env;
 use std::io;
 use std::path::Path;
@@ -19,8 +18,6 @@ enum TrackServerError {
 }
 
 fn main() -> Result<(), TrackServerError> {
-    load_environment_variables(None);
-
     let db_path = match env::var("DB_PATH") {
         Ok(path) => path,
         Err(_) => {

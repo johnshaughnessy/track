@@ -1,4 +1,4 @@
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 
 extern crate dotenv;
 
@@ -11,21 +11,7 @@ pub enum AppEnvironment {
 }
 
 #[allow(unused)]
-pub fn load_environment_variables(app_env: Option<AppEnvironment>) -> PathBuf {
-    let app_env = app_env.unwrap_or_else(|| {
-        let env_var =
-            env::var("APP_ENV").expect("You must specify an APP_ENV (dev, test, or prod).");
-        match env_var.as_str() {
-            "dev" => AppEnvironment::Dev,
-            "prod" => AppEnvironment::Prod,
-            "test" => AppEnvironment::Test,
-            _ => panic!(
-                "Unrecognized APP_ENV {:?}. Must provide dev, test, or prod.",
-                env_var
-            ),
-        }
-    });
-
+pub fn load_environment_variables(app_env: AppEnvironment) -> PathBuf {
     let dotenv_file = match app_env {
         AppEnvironment::Dev => ".env.dev",
         AppEnvironment::Test => ".env.test",
