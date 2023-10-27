@@ -8,7 +8,7 @@ extern crate serde_derive;
 
 #[derive(Deserialize)]
 pub struct WeightPayload {
-    weight: f64,
+    weight_kg: f64,
 }
 
 pub async fn add_weight(
@@ -16,8 +16,8 @@ pub async fn add_weight(
     db_conn: web::Data<Arc<Mutex<Connection>>>,
 ) -> impl Responder {
     let db_conn = db_conn.get_ref().lock().unwrap();
-    match db::save_weight(&db_conn, weight.weight) {
-        Ok(_) => HttpResponse::Ok().body(format!("Weight added: {}", weight.weight)),
+    match db::save_weight(&db_conn, weight.weight_kg) {
+        Ok(_) => HttpResponse::Ok().body(format!("Weight added: {}", weight.weight_kg)),
         Err(_) => HttpResponse::InternalServerError().body("Error adding weight."),
     }
 }

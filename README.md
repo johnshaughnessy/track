@@ -79,9 +79,9 @@ Timestamps are ISO 8601.
 - [x] Make accessible online
 - [x] Create github workflow to auto-build docker image on commit to main
 - [x] Create github workflow to (manually) ship latest docker image to production server
-- [ ] Create client to list, add, delete, update weights
 - [ ] Create API to delete weights
 - [ ] Create API to update weights
+- [ ] Create client to list, add, delete, update weights
 - [ ] Create UI to list weights
 - [ ] Create UI to add weight
 - [ ] Create UI to delete weight
