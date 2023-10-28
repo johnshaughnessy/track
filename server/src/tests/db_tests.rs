@@ -1,8 +1,3 @@
-use crate::db::get_weights;
-use crate::db::initialize_db;
-use crate::db::save_weight;
-use chrono::NaiveDateTime;
-
 #[test]
 fn test_save_weight() {
     // let conn = Connection::open_in_memory().unwrap();
