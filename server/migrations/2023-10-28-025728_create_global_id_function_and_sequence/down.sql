@@ -1,0 +1,2 @@
+DROP FUNCTION IF EXISTS next_id;
+DROP SEQUENCE IF EXISTS global_id_seq;
