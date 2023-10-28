@@ -8,3 +8,4 @@ server/Cargo.lock
 
 ./db/
 .*.sqlite3
+track.wiki/
