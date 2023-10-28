@@ -11,8 +11,6 @@ mod tests;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    println!("Testing an innocuous change to trigger workflow.");
-
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let ip_address = std::env::var("IP_ADDRESS").expect("IP_ADDRESS must be set");
     let port = std::env::var("PORT").expect("PORT must be set");
