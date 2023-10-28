@@ -1,12 +1,16 @@
+#[macro_use]
+extern crate diesel;
+
+use actix_web::{web, App, HttpServer};
+use diesel::r2d2::{self, ConnectionManager};
+use diesel::PgConnection;
+
 mod api;
 mod db;
 mod env;
-use actix_web::{web, App, HttpServer};
 
-extern crate diesel;
-
-use diesel::r2d2::{self, ConnectionManager};
-use diesel::PgConnection;
+#[cfg(test)]
+mod tests;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -22,7 +26,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new().app_data(web::Data::new(pool.clone())).service(
             web::resource("/weights")
-                .route(web::post().to(api::add_weight))
+                .route(web::post().to(api::create_weight))
                 .route(web::get().to(api::get_weights)),
         )
     })
@@ -30,6 +34,3 @@ async fn main() -> std::io::Result<()> {
     .run()
     .await
 }
-
-#[cfg(test)]
-mod tests;

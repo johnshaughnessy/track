@@ -1,30 +1,41 @@
-use crate::db::CreateWeightPayload;
-// use diesel::prelude::*;
+use crate::db::schema::weights;
 use diesel::result::Error;
+use diesel::{ExpressionMethods, PgConnection, RunQueryDsl};
 
-use diesel::PgConnection;
+use super::types::{CreateWeightInput, Weight};
 
-#[allow(unused)]
-pub fn initialize_db(conn: &PgConnection) -> Result<(), Error> {
-    //    conn.execute(
-    //        "CREATE TABLE IF NOT EXISTS weight (
-    //               id INTEGER PRIMARY KEY,
-    //               weight REAL,
-    //               timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)",
-    //        [],
-    //    )?;
+pub fn initialize_db(conn: &mut PgConnection) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn save_weight(conn: &PgConnection, weight: &CreateWeightPayload) -> Result<(), Error> {
-    //   conn.execute("INSERT INTO weights (weight) VALUES (?1)", params![weight])?;
-    Ok(())
+pub fn create_weight(
+    conn: &mut PgConnection,
+    payload: &CreateWeightInput,
+) -> Result<Weight, Error> {
+    let new_weight = Weight {
+        weight_id: 0, // Placeholder, assuming it's auto-incremented in the DB
+        weight_kg: payload.weight_kg,
+        measured_at: payload.measured_at,
+        created_at: 0, // Placeholder, to be set by the database if you have set up automatic timestamps
+        updated_at: 0, // Placeholder
+    };
+
+    let inserted_weight = diesel::insert_into(weights::table)
+        .values(&new_weight)
+        .returning(weights::all_columns)
+        .get_result::<(i64, f64, i64, i64, i64)>(conn)?;
+
+    let inserted_weight = Weight {
+        weight_id: inserted_weight.0,
+        weight_kg: inserted_weight.1,
+        measured_at: inserted_weight.2,
+        created_at: inserted_weight.3,
+        updated_at: inserted_weight.4,
+    };
+
+    Ok(inserted_weight)
 }
 
-pub fn get_weights(conn: &PgConnection) -> Result<Vec<(i32, f64, String)>, Error> {
-    //  let mut stmt = conn.prepare("SELECT id, weight, timestamp FROM weights")?;
-    //  let weight_iter = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))?;
-    //  let weights: Result<Vec<(i32, f64, String)>> = weight_iter.collect();
-    //weights
+pub fn list_weights(conn: &mut PgConnection) -> Result<Vec<(i32, f64, String)>, Error> {
     Ok(vec![])
 }

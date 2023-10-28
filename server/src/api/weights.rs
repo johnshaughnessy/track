@@ -1,24 +1,25 @@
-use crate::db::{self, CreateWeightPayload};
 use actix_web::{web, HttpResponse, Responder};
-use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::PgConnection;
+use server::db::operations;
+use server::db::types::CreateWeightInput;
 
-pub async fn add_weight(
-    weight: web::Json<CreateWeightPayload>,
+pub async fn create_weight(
+    input: web::Json<CreateWeightInput>,
     pool: web::Data<Pool<ConnectionManager<PgConnection>>>,
 ) -> impl Responder {
-    let conn = pool.get().unwrap();
-    let weight = weight.into_inner();
-    match db::save_weight(&conn, &weight) {
-        Ok(_) => HttpResponse::Ok().body(format!("Weight added: {}", weight.weight_kg)),
+    let mut conn = pool.get().unwrap();
+    let payload = input.into_inner();
+    match operations::create_weight(&mut conn, &payload) {
+        Ok(_) => HttpResponse::Ok().body(format!("Weight added: {}", payload.weight_kg)),
         Err(_) => HttpResponse::InternalServerError().body("Error adding weight."),
     }
 }
 
 pub async fn get_weights(pool: web::Data<Pool<ConnectionManager<PgConnection>>>) -> impl Responder {
-    let conn: PooledConnection<ConnectionManager<PgConnection>> = pool.get().unwrap();
+    let mut conn = pool.get().unwrap();
 
-    match db::get_weights(&conn) {
+    match operations::list_weights(&mut conn) {
         Ok(weights) => HttpResponse::Ok().json(weights),
         Err(_) => HttpResponse::InternalServerError().body("Error retrieving weights."),
     }
