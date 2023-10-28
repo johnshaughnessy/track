@@ -1,7 +1,6 @@
 git/
 
 server/target/
-server/Cargo.lock
 
 *.swp
 .DS_Store

@@ -9,8 +9,6 @@ use crate::api;
 extern crate serde_derive;
 use actix_web::{test, web, App};
 
-use server::env::{load_environment_variables, AppEnvironment};
-
 #[actix_rt::test]
 async fn test_get_weights() {
     // load_environment_variables(AppEnvironment::Test);
