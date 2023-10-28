@@ -84,6 +84,7 @@ Timestamps are the number of non-leap seconds since January 1, 1970 0:00:00 UTC 
 - [x] Manage the postgres and server processes with docker compose
 - [x] Set up the dev environment to use docker compose
 - [x] Configure prod variables and secrets for github actions/workflows
+- [ ] Automate database migration deployment
 - [ ] (Re)Create API to list weights
 - [ ] (Re)Create API to add weights
 - [ ] Create API to delete weights
@@ -97,3 +98,51 @@ Timestamps are the number of non-leap seconds since January 1, 1970 0:00:00 UTC 
 - [ ] Add authentication
 - [ ] Add tls / https
 - [ ] Add paging and filtering to GET /weights
+
+# Dev Log
+
+## 2023-10-28
+
+I migrated from sqlite to postgres, and started using diesel.
+
+I set up Github workflows to automate building and deploying the application. I have not automated database migrations yet.
+
+Instead, to run database migrations in production I followed these steps:
+
+- I `sshed` into the prod vm.
+
+- I spun up a (throw-away) docker container using a rust image in the same "docker-compose" environment/network:
+
+```sh
+docker run --rm -it -v ~/track:/app --network docker_default rust:1.73-slim-buster /bin/bash
+```
+
+- I installed some prerequisites in the container. Namely libpq-dev:
+
+```sh
+apt-get update && apt-get install -y build-essential libpq-dev
+```
+
+- I installed `diesel_cli` in the container:
+
+```sh
+cargo install diesel_cli --no-default-features --features postgres
+```
+
+- I saved a snapshot of the container as an image I can reuse:
+
+```sh
+docker commit a84c48dd9ca7 johnshaughnessy/migration-runner
+
+# sha256:a482b7941204854c84b2d3b1e067ca058a1cca4f8aee777643ef499a84fb8d3b
+```
+
+- I made sure the DATABASE_URL environment variable was configured and ran the migrations.
+
+```sh
+DATABASE_URL=postgres://postgres:redacted@db:5432/postgres diesel migration run
+```
+
+- I made sure that the migrations had run successfully. Since I don't have automated tests yet, I just manually created some entries with `curl` and listed them.
+
+- I shut down the throw-away container.
