@@ -22,9 +22,17 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new().app_data(web::Data::new(pool.clone())).service(
-            web::resource("/weights")
-                .route(web::post().to(api::create_weight))
-                .route(web::get().to(api::get_weights)),
+            web::scope("/api")
+                .service(
+                    web::resource("/weights")
+                        .route(web::get().to(api::get_weights))
+                        .route(web::post().to(api::post_weights)),
+                )
+                .service(
+                    web::resource("/weights/{weight_id}")
+                        .route(web::patch().to(api::patch_weights))
+                        .route(web::delete().to(api::delete_weights)),
+                ),
         )
     })
     .bind(format!("{}:{}", ip_address, port))?
