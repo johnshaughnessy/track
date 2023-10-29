@@ -1,6 +1,8 @@
 git/
 
+target/
 server/target/
+web-client/target/
 
 *.swp
 .DS_Store

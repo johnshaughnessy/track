@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "server",
+    "web-client"
+]
