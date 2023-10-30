@@ -2,6 +2,7 @@ use diesel::deserialize::QueryableByName;
 use diesel::prelude::*;
 use diesel::update;
 use diesel::Insertable;
+use log::info;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::schema::weights;
@@ -47,7 +48,7 @@ pub fn create_weight(
         .returning(weights::all_columns)
         .get_result(conn)?;
 
-    println!("create_weight results: \n{:?}", inserted_weight);
+    info!("create_weight results: \n{:?}", inserted_weight);
     Ok(inserted_weight)
 }
 
@@ -56,7 +57,7 @@ pub fn read_weights(conn: &mut PgConnection) -> Result<Vec<Weight>, diesel::resu
 
     let results: Result<Vec<Weight>, diesel::result::Error> = weights.limit(100).load(conn);
 
-    println!("read_weights results: \n{:?}", results);
+    info!("read_weights results: \n{:?}", results);
     results
 }
 
@@ -74,7 +75,7 @@ pub fn update_weight(
         .filter(weight_id.eq(target_weight_id))
         .get_result(conn)?;
 
-    println!("update_weight results: \n{:?}", updated_weight);
+    info!("update_weight results: \n{:?}", updated_weight);
     Ok(updated_weight)
 }
 
@@ -87,7 +88,7 @@ pub fn delete_weight(
     let num_deleted =
         diesel::delete(weights.filter(weight_id.eq(target_weight_id))).execute(conn)?;
 
-    println!("delete_weight results: \n{:?}", num_deleted);
+    info!("delete_weight results: \n{:?}", num_deleted);
 
     if num_deleted != 1 {
         return Err(diesel::result::Error::RollbackTransaction);
@@ -102,6 +103,10 @@ mod tests {
     use diesel::r2d2::{self, ConnectionManager, PooledConnection};
 
     use super::*;
+
+    fn setup() {
+        let _ = env_logger::builder().is_test(true).try_init();
+    }
 
     fn get_test_connection() -> PooledConnection<ConnectionManager<PgConnection>> {
         let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -120,6 +125,7 @@ mod tests {
 
     #[test]
     fn test_create_weight() {
+        setup();
         let mut conn = get_test_connection();
 
         let new_weight = CreateWeightPayload {
@@ -136,6 +142,7 @@ mod tests {
 
     #[test]
     fn test_read_weights() {
+        setup();
         let mut conn = get_test_connection();
         create_weight_for_test(&mut conn); // Ensure there is at least one weight in the database
         let result = read_weights(&mut conn);
@@ -146,9 +153,10 @@ mod tests {
 
     #[test]
     fn test_update_weight() {
+        setup();
         let mut conn = get_test_connection();
         let target_weight_id = create_weight_for_test(&mut conn).weight_id;
-        println!("{:?}", create_weight_for_test(&mut conn));
+        info!("{:?}", create_weight_for_test(&mut conn));
         let update_payload = UpdateWeightPayload {
             measured_at: 1635535802,
             weight_kg: 71.0,
@@ -162,6 +170,7 @@ mod tests {
 
     #[test]
     fn test_delete_weight() {
+        setup();
         let mut conn = get_test_connection();
         let target_weight_id = create_weight_for_test(&mut conn).weight_id;
         let result = delete_weight(&mut conn, target_weight_id);
