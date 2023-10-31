@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use diesel::deserialize::QueryableByName;
 use diesel::prelude::*;
 use diesel::update;
@@ -7,7 +8,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::schema::weights;
 
-use super::{Timestamp, ID};
+use super::ID;
 
 #[derive(
     Debug, Copy, Clone, Serialize, Deserialize, Queryable, QueryableByName, Insertable, Identifiable,
@@ -18,24 +19,25 @@ use super::{Timestamp, ID};
 pub struct Weight {
     pub weight_id: ID,
     #[serde(skip_serializing)]
-    pub inserted_at: Timestamp,
+    pub inserted_at: NaiveDateTime,
     #[serde(skip_serializing)]
-    pub updated_at: Timestamp,
-    pub measured_at: Timestamp,
+    pub updated_at: NaiveDateTime,
+    pub measured_at: NaiveDateTime,
     pub weight_kg: f64,
 }
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = crate::schema::weights)]
 pub struct CreateWeightPayload {
-    pub measured_at: Timestamp,
+    pub measured_at: NaiveDateTime,
     pub weight_kg: f64,
 }
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, AsChangeset, Insertable)]
 #[diesel(table_name = crate::schema::weights)]
 pub struct UpdateWeightPayload {
-    pub measured_at: Timestamp,
+    pub measured_at: NaiveDateTime,
+
     pub weight_kg: f64,
 }
 
@@ -117,7 +119,8 @@ mod tests {
 
     fn create_weight_for_test(conn: &mut PgConnection) -> Weight {
         let new_weight = CreateWeightPayload {
-            measured_at: 1635535801,
+            measured_at: NaiveDateTime::from_timestamp_opt(1635535802, 0)
+                .expect("Failed to create NaiveDateTime from timestamp"),
             weight_kg: 70.5,
         };
         create_weight(conn, &new_weight).unwrap()
@@ -129,7 +132,8 @@ mod tests {
         let mut conn = get_test_connection();
 
         let new_weight = CreateWeightPayload {
-            measured_at: 1635535801,
+            measured_at: NaiveDateTime::from_timestamp_opt(1635535802, 0)
+                .expect("Failed to create NaiveDateTime from timestamp"),
             weight_kg: 70.5,
         };
 
@@ -158,7 +162,8 @@ mod tests {
         let target_weight_id = create_weight_for_test(&mut conn).weight_id;
         info!("{:?}", create_weight_for_test(&mut conn));
         let update_payload = UpdateWeightPayload {
-            measured_at: 1635535802,
+            measured_at: NaiveDateTime::from_timestamp_opt(1635535802, 0)
+                .expect("Failed to create NaiveDateTime from timestamp"),
             weight_kg: 71.0,
         };
         let result = update_weight(&mut conn, target_weight_id, &update_payload);
