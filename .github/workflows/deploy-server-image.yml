@@ -66,16 +66,21 @@ jobs:
 
       - name: Prepare and Deploy
         run: |
+
+          cat <<EOM >/tmp/gcp-sa-key.json
+            ${{ secrets.GCP_SA_KEY }}
+          EOM
+
+          scp -i ~/.ssh/private_key.pem /tmp/gcp-sa-key.json ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/gcp-sa-key.json
+
           ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<"ENDSSH"
-            echo -n -e "${{ secrets.GCP_SA_KEY }}" > /tmp/gcp-sa-key.json
             gcloud auth activate-service-account --key-file=/tmp/gcp-sa-key.json
             gcloud auth configure-docker us-central1-docker.pkg.dev
-            rm /tmp/gcp-sa-key.json
+            # rm /tmp/gcp-sa-key.json
 
             export APP_ENV=${{ vars.APP_ENV }}
             export HOST_PORT=${{ vars.HOST_PORT }}
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            # echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
             docker compose -f docker/base.yml -f docker/prod.yml pull
             docker compose -f docker/base.yml -f docker/prod.yml down
             docker compose -f docker/base.yml -f docker/prod.yml up -d
