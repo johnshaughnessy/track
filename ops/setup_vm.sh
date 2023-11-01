@@ -16,20 +16,22 @@ ssh -T john@$VM_IP <<'ENDSSH'
   sudo chmod -x /etc/update-motd.d/*
 ENDSSH
 
-# Ensure Nix is installed on the Ubuntu VM
+# Ensure Nix is installed
 ssh -T john@$VM_IP <<'ENDSSH'
   if ! command -v nix-env &> /dev/null; then
     echo "Nix not found. Installing Nix..."
     curl -L https://nixos.org/nix/install | sh
     # . $HOME/.nix-profile/etc/profile.d/nix.sh
   else
-    echo "Nix is already installed."
+    echo "Nix is already installed. Skipping installation."
   fi
 ENDSSH
 
 # Copy Nix configuration to VM
 ssh -T john@$VM_IP "mkdir -p /home/john/track/"
+echo "Copying configs..."
 scp ./vm-config.nix john@$VM_IP:/home/john/track/
+scp ./docker.service john@$VM_IP:/home/john/track/
 
 # Apply Nix configuration on VM
 ssh -T john@$VM_IP <<'ENDSSH'
@@ -41,4 +43,14 @@ ssh -T john@$VM_IP <<'ENDSSH'
 
   # Install the packages
   nix-env -i -f /home/john/track/vm-config.nix
+
+  sudo cp /home/john/track/docker.service /etc/systemd/system/docker.service
+  sudo groupadd docker
+  sudo usermod -aG docker john
+
+  sudo systemctl daemon-reload
+  sudo systemctl enable docker
+  # sudo systemctl start docker
+  sudo systemctl restart docker
+  echo "Docker is $(sudo systemctl is-active docker)."
 ENDSSH

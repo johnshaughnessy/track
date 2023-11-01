@@ -1,0 +1,13 @@
+[Unit]
+Description=Docker Daemon
+After=network.target
+
+[Service]
+ExecStart=/home/john/.nix-profile/bin/dockerd
+ExecReload=/bin/kill -HUP $MAINPID
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target
