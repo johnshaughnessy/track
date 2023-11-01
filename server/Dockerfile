@@ -1,5 +1,5 @@
 # Use the base builder image
-FROM johnshaughnessy/track/track-base-builder as builder
+FROM us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-base-builder as builder
 WORKDIR /usr/src/app
 COPY . .
 RUN cargo build --release
