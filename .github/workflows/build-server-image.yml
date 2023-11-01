@@ -1,4 +1,4 @@
-name: Build server image
+name: Build server images
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build_base_builder:
+  build_docker_image_track_base_builder:
     runs-on: ubuntu-latest
 
     steps:
@@ -42,9 +42,9 @@ jobs:
           docker build -f Dockerfile.base-builder --target base-builder -t us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-base-builder .
           docker push us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-base-builder
 
-  build_and_push:
+  build_docker_image_track_server:
     runs-on: ubuntu-latest
-    needs: build_base_builder
+    needs: build_docker_image_track_base_builder
 
     steps:
       - name: Checkout code
@@ -66,3 +66,28 @@ jobs:
           cd server
           docker build -t us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-server .
           docker push us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-server
+
+  build_docker_image_track_migration_runner:
+    runs-on: ubuntu-latest
+    needs: build_docker_image_track_base_builder
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GCP_SA_KEY }}"
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+
+      - name: Configure Docker to use Google Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: Build and Push Migration Runner Image
+        run: |
+          cd server  # Change this to your Dockerfile's directory if needed
+          docker build -t us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-migration-runner -f Dockerfile.migration .
+          docker push us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-migration-runner
