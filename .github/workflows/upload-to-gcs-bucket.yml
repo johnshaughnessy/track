@@ -27,6 +27,9 @@ jobs:
           echo "want to upload to gs://ocho-osai/store.json"
           cat ./gcs/store.json
 
+      - name: List objects in bucket
+        run: gsutil ls gs://ocho-osai/
+
       - name: Upload to GCS
         uses: google-github-actions/upload-cloud-storage@v1
         with:
