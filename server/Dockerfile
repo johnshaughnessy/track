@@ -1,5 +1,5 @@
 # Use the base builder image
-FROM johnshaughnessy/track-base-builder as builder
+FROM johnshaughnessy/track/track-base-builder as builder
 WORKDIR /usr/src/app
 COPY . .
 RUN cargo build --release

@@ -6,4 +6,4 @@ COPY . .
 # RUN cargo fetch  # This fetches all dependencies as per Cargo.lock
 RUN cargo build --release # This forces compilation of dependencies
 
-# Upload this to johnshaughnessy/track-base-builder
+# Upload this to johnshaughnessy/track/track-base-builder
