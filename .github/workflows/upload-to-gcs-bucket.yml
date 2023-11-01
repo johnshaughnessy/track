@@ -21,23 +21,8 @@ jobs:
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v1"
 
-      - name: "Debug logging"
-        run: |
-          echo "hello world"
-          echo "want to upload to gs://ocho-osai/store.json"
-          cat ./gcs/store.json
-
-      - name: List objects in bucket
-        run: gsutil ls gs://ocho-osai/
-
-      - name: Manually remove from GCS
-        run: gsutil rm gs://ocho-osai/store.json || true
-
       - name: Upload to GCS
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: ./gcs/store.json
-          destination: ocho-osai/store.json
-
-      # - name: Manually upload to GCS
-      #   run: gsutil cp ./gcs/store.json gs://ocho-osai/store.json
+          destination: ocho-osai/
