@@ -22,21 +22,21 @@ jobs:
               - 'server/Cargo.lock'
 
       - id: "auth"
-        if: steps.changes.outputs.lock == 'true'
+        #if: steps.changes.outputs.lock == 'true'
         uses: "google-github-actions/auth@v1"
         with:
           credentials_json: "${{ secrets.GCP_SA_KEY }}"
 
       - name: "Set up Cloud SDK"
-        if: steps.changes.outputs.lock == 'true'
+        #if: steps.changes.outputs.lock == 'true'
         uses: "google-github-actions/setup-gcloud@v1"
 
       - name: Configure Docker to use Google Artifact Registry
-        if: steps.changes.outputs.lock == 'true'
+        #if: steps.changes.outputs.lock == 'true'
         run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
       - name: Build Base Builder Image
-        if: steps.changes.outputs.lock == 'true'
+        #if: steps.changes.outputs.lock == 'true'
         run: |
           cd server
           docker build -f Dockerfile.base-builder --target base-builder -t us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-base-builder .
