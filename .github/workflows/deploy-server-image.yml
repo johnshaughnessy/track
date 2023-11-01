@@ -1,12 +1,32 @@
 ---
 name: Deploy server image
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Deployment environment"
+        required: true
+        default: "staging"
 
 jobs:
-  deploy_to_server:
+  validate:
     runs-on: ubuntu-latest
-    environment: prod
+    outputs:
+      env: ${{ steps.setenv.outputs.env }}
+    steps:
+      - name: Validate environment
+        id: setenv
+        run: |
+          if [[ "${{ github.event.inputs.env }}" != "prod" && "${{ github.event.inputs.env }}" != "staging" ]]; then
+            echo "Error: Invalid environment specified. Can only be 'prod' or 'staging'."
+            exit 1
+          fi
+
+  deploy_to_server:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.env }}
     steps:
       - name: Setup SSH
         run: |
@@ -33,9 +53,25 @@ jobs:
           ENDSSH
           echo "created alias script"
 
+      # - id: "auth"
+      #   uses: "google-github-actions/auth@v1"
+      #   with:
+      #     credentials_json: "${{ secrets.GCP_SA_KEY }}"
+
+      # - name: "Set up Cloud SDK"
+      #   uses: "google-github-actions/setup-gcloud@v1"
+
+      # - name: Configure Docker to use Google Artifact Registry
+      #   run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
       - name: Prepare and Deploy
         run: |
           ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<"ENDSSH"
+            echo "${{ secrests.GCP_SA_KEY }}" > /tmp/gcp-sa-key.json
+            gcloud auth activate-service-account --key-file=/tmp/gcp-sa-key.json
+            gcloud auth configure-docker us-central1-docker.pkg.dev
+            rm /tmp/gcp-sa-key.json
+
             export APP_ENV=${{ vars.APP_ENV }}
             export HOST_PORT=${{ vars.HOST_PORT }}
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
