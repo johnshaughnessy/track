@@ -16,4 +16,4 @@ rm /tmp/gcp-credentials.json
 gcloud auth configure-docker us-central1-docker.pkg.dev
 
 # Run the Docker container
-docker run --rm -it -v ~/track:/app --network docker_default us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-migration-runner /bin/bash
+docker run --rm -it -v ~/track:/app --network track_default us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-migration-runner /bin/bash

@@ -10,3 +10,5 @@ web-client/target/
 ./db/
 .*.sqlite3
 track.wiki/
+
+ops/backups/
