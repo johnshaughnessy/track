@@ -114,6 +114,5 @@ if ! shopt -oq posix; then
         . /etc/bash_completion
     fi
 fi
-. "$HOME/.cargo/env"
 
 source "$HOME/track/alias"

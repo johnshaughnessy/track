@@ -1,4 +1,4 @@
-name: Backup Database
+name: Create Postgres Backup
 
 on:
   workflow_dispatch:
@@ -31,10 +31,10 @@ jobs:
             docker ps --all
             CONTAINER_NAME=\$(docker ps --format '{{.Names}}' | grep db)
             echo "Container name is: \$CONTAINER_NAME"
-            # Run pg_dump inside the container to create the backup
             echo "Creating database backup..."
             docker exec \$CONTAINER_NAME pg_dump -U postgres -h localhost trackdb | gzip > /tmp/$BACKUP_NAME
             echo "Done creating database backup."
+            docker ps --all
           ENDSSH
 
           scp -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/$BACKUP_NAME .

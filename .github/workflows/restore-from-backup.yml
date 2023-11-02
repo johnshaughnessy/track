@@ -1,0 +1,177 @@
+name: Restore from backup
+
+on:
+  workflow_dispatch:
+
+# on:
+#   schedule:
+#     - cron: '0 0 * * *'  # Runs at 00:00 UTC daily.
+
+jobs:
+  backup_upload:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/private_key.pem
+          chmod 600 ~/.ssh/private_key.pem
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Update from backup
+        run: |
+
+          # Authenticate with GCP
+          echo '${{ secrets.GCP_SA_KEY }}' > /tmp/gcp-sa-key.json
+          gcloud auth activate-service-account --key-file=/tmp/gcp-sa-key.json
+          rm /tmp/gcp-sa-key.json $BACKUP_NAME
+
+          # Find most recent backup file from the cloud storage bucket
+          MOST_RECENT_BACKUP=$(gsutil ls -l gs://ocho-osai/track/pg_data/ | grep -v "TOTAL:" | sort -k2,2 -r | awk '{ $1=$2=""; print $0 }' | sed 's/^[ \t]*//' | head -n 1 | tr -d '\n');
+          BACKUP_NAME_GZ=$(basename $MOST_RECENT_BACKUP);
+          BACKUP_NAME=${BACKUP_NAME_GZ%.gz}
+          gsutil cp $MOST_RECENT_BACKUP ./backups/$BACKUP_NAME_GZ
+
+          # Ensure the backup file exists and is a gzip file
+          if [ -f "backups/$BACKUP_NAME_GZ" ] && [[ "backups/$BACKUP_NAME_GZ" == *.gz ]]; then
+              gunzip -k "backups/$BACKUP_NAME_GZ"
+              echo "Backup decompressed to backups/$BACKUP_NAME"
+          else
+              echo "Backup file does not exist or is not a gzip file."
+              exit 1
+          fi
+
+          # Ensure there's an (empty) backups directory
+          ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << EOF
+            if [ -d \~/track/backups/ ]; then
+              rm -r \~/track/backups/
+            fi
+            mkdir -p \~/track/backups/
+          EOF
+
+          # Copy the decompressed backup file.
+          scp -i ~/.ssh/private_key.pem "backups/$BACKUP_NAME" ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/track/backups/$BACKUP_NAME
+
+          # The rest can be done on the machine directly
+          ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << EOF
+
+            ls \$HOME/
+            ls \$HOME/track/
+            ls \$HOME/track/backups/
+
+            if [ -f "\$HOME/track/backups/$BACKUP_NAME" ]; then
+              echo "Restoring from backup: $BACKUP_NAME"
+            else
+              echo "Backup file $BACKUP_NAME not found. Exiting."
+              exit 1
+            fi
+
+            export APP_ENV=${{ vars.APP_ENV }}
+            export HOST_PORT=${{ vars.HOST_PORT }}
+            export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+
+            docker compose -f track/base.yml -f track/prod.yml down
+            docker compose -f track/base.yml -f track/prod.yml up -d db
+            sleep 5
+            docker compose -f track/base.yml -f track/prod.yml exec db ls < /dev/null
+            docker compose -f track/base.yml -f track/prod.yml exec db ls < /dev/null
+
+          EOF
+
+          echo "END"
+
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          #   "rm -r /home/${{ secrets.SERVER_USER }}/track/backups/ || true"
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          #   "mkdir -p /home/${{ secrets.SERVER_USER }}/track/backups/"
+
+          # scp -i ~/.ssh/private_key.pem $BACKUP_FILE ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/track/$BACKUP_FILE
+
+          # echo "Available backups:"
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          #   ls ./track/backups/
+
+          # echo "Available backups:"
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          #   ls ./track/$BACKUP_FILE
+
+          # echo "Bringing down docker containers."
+
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "whoami; hostname; docker compose -f track/base.yml -f track/prod.yml down"
+
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml down"
+
+          # echo "Status:"
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml ps"
+
+          # echo "Starting db service in isolation."
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml up -d db"
+
+          # echo "Status:"
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml ps"
+
+          # echo "A"
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml exec db echo \"hello world!\""
+
+          # echo "B"
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml exec db echo \"goodbyeworld!\""
+
+          # echo "C"
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml exec -T db psql -U postgres -c \"DROP DATABASE IF EXISTS trackdb;\""
+
+          # echo "D"
+
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          #   docker compose -f track/base.yml -f track/prod.yml exec -T db psql -U postgres -c "CREATE DATABASE trackdb;"
+
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          #   docker compose -f track/base.yml -f track/prod.yml cp ./track/$BACKUP_FILE db:/backup
+
+          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << ENDSSH
+          #   ls ./track/backups/
+
+          #   export APP_ENV=${{ vars.APP_ENV }}
+          #   export HOST_PORT=${{ vars.HOST_PORT }}
+          #   export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+
+          #   # Restore from backup. The postgres docker service is called "db"
+          #   echo "Bringing down services."
+          #   docker compose -f track/base.yml -f track/prod.yml down
+
+          #   echo "Status:"
+          #   docker compose -f track/base.yml -f track/prod.yml ps
+
+          #   echo "Starting db service in isolation."
+          #   docker compose -f track/base.yml -f track/prod.yml up -d db
+
+          #   echo "Status:"
+          #   docker compose -f track/base.yml -f track/prod.yml ps
+
+          #   echo "Preparing for restore."
+          #   #docker compose -f track/base.yml -f track/prod.yml exec db echo "hello world!"
+          #   echo "A"
+          #   #docker compose -f track/base.yml -f track/prod.yml exec -T db echo "hello world!" || true
+          #   output=$(docker compose -f track/base.yml -f track/prod.yml exec db echo "hello world!") || true
+          #   echo "$output"
+          #   echo "B"
+
+
+          #   docker compose -f track/base.yml -f track/prod.yml exec -T db echo "hello world 2!"
+          #   docker compose -f track/base.yml -f track/prod.yml exec -T db psql -U postgres -c "DROP DATABASE IF EXISTS trackdb;"
+          #   docker compose -f track/base.yml -f track/prod.yml exec -T db psql -U postgres -c "CREATE DATABASE trackdb;"
+
+          #   echo "Restoring from backup."
+          #   docker compose -f track/base.yml -f track/prod.yml cp ./track/$BACKUP_FILE db:/backup
+          #   docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -d trackdb -f /backup
+
+          #   echo "Bringing down db."
+          #   docker compose -f track/base.yml -f track/prod.yml down
+
+          #   echo "Bringing up all services."
+          #   docker compose -f track/base.yml -f track/prod.yml up -d
+
+          #   echo "Status:"
+          #   docker compose -f track/base.yml -f track/prod.yml ps
+
+          # ENDSSH

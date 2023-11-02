@@ -1,5 +1,23 @@
 #!/usr/bin/env sh
-#
+
+POSTGRES_PASSWORD=$1
+BACKUP_FILE=$2
+
+if [ -z "$BACKUP_FILE" ]; then
+    BACKUP_FILE=$(gsutil ls -l gs://ocho-osai/track/pg_data/ | grep -v "TOTAL:" | sort -k2,2 -r | awk '{ $1=$2=""; print $0 }' | sed 's/^[ \t]*//' | head -n 1 | tr -d '\n')
+    echo "Warning: No BACKUP_FILE provided. Fetching the most recent one: $BACKUP_FILE"
+    gsutil cp $BACKUP_FILE ./backups/
+    echo "base: $(basename $BACKUP_FILE)"
+    BACKUP_FILE=$(basename $BACKUP_FILE)
+    echo "$BACKUP_FILE"
+    BACKUP_FILE=./backups/$BACKUP_FILE
+    echo "$BACKUP_FILE"
+fi
+
+if [ -z "$BACKUP_FILE" ] || [ -z "$POSTGRES_PASSWORD" ]; then
+    echo "Warning: Both BACKUP_FILE and POSTGRES_PASSWORD need to be provided."
+    cat <<EOF
+
 # List backups with:
 #
 #   gsutil ls gs://ocho-osai/track/pg_data/
@@ -10,16 +28,11 @@
 #
 # Run this script with
 #
-#   ./inspect_backup.sh gs://ocho-osai/track/pg_data/pg_backup_2023-11-02T14-51-44.sql.gz
+#   ./inspect_backup.sh password gs://ocho-osai/track/pg_data/pg_backup_2023-11-02T14-51-44.sql.gz
 #
 # From there, you can run psql commands to inspect the data.
-#
 
-BACKUP_FILE=$1
-POSTGRES_PASSWORD=$2
-
-if [ -z "$BACKUP_FILE" ] || [ -z "$POSTGRES_PASSWORD" ]; then
-    echo "Warning: Both BACKUP_FILE and POSTGRES_PASSWORD need to be provided."
+EOF
     exit 1
 fi
 
@@ -51,7 +64,7 @@ docker run --name temp-postgres \
     -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
     -v "$PWD/$DECOMPRESSED_FILE:/docker-entrypoint-initdb.d/dump.sql" \
     -v "$VOLUME_NAME:/var/lib/postgresql/data" \
-    -d trackdb
+    -d postgres
 
 # Check if container started successfully
 if [ $? -ne 0 ]; then
@@ -61,4 +74,4 @@ fi
 
 echo "PostgreSQL container started successfully."
 
-docker exec -it temp-postgres bash -c "sleep 1; psql -U postgres -d trackdb"
+docker exec -it temp-postgres bash -c "sleep 1; psql -U postgres"

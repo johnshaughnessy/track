@@ -81,4 +81,7 @@ jobs:
             docker compose -f track/base.yml -f track/prod.yml pull
             docker compose -f track/base.yml -f track/prod.yml down
             docker compose -f track/base.yml -f track/prod.yml up -d
+
+            echo "Status:"
+            docker compose -f track/base.yml -f track/prod.yml ps
           ENDSSH
