@@ -32,6 +32,7 @@ ssh -T john@$VM_IP "mkdir -p /home/john/track/"
 echo "Copying configs..."
 scp ./vm-config.nix john@$VM_IP:/home/john/track/
 scp ./docker.service john@$VM_IP:/home/john/track/
+scp ./.bashrc john@$VM_IP:/home/john/.bashrc
 
 # Apply Nix configuration on VM
 ssh -T john@$VM_IP <<'ENDSSH'
@@ -45,12 +46,17 @@ ssh -T john@$VM_IP <<'ENDSSH'
   nix-env -i -f /home/john/track/vm-config.nix
 
   sudo cp /home/john/track/docker.service /etc/systemd/system/docker.service
-  sudo groupadd docker
-  sudo usermod -aG docker john
+
+  # Check if 'docker' group exists
+  getent group docker >/dev/null 2>&1 || sudo groupadd docker
+
+  # Check if user is already in 'docker' group
+  if ! id -nG "$USER" | grep -qw "docker"; then
+    sudo usermod -aG docker $USER
+  fi
 
   sudo systemctl daemon-reload
   sudo systemctl enable docker
-  # sudo systemctl start docker
   sudo systemctl restart docker
   echo "Docker is $(sudo systemctl is-active docker)."
 ENDSSH

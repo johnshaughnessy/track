@@ -1,4 +1,4 @@
-# Copy and paste these commands from inside the target VM to start running migrations!
+# Run this script inside the target VM for migrations!
 
 # Assuming that your GCP service account credentials are stored locally in a file named "gcp-credentials.json"
 # You should upload this file securely to your VM beforehand
@@ -16,4 +16,4 @@ rm /tmp/gcp-credentials.json
 gcloud auth configure-docker us-central1-docker.pkg.dev
 
 # Run the Docker container
-docker run --rm -it -v ~/track:/app --network docker_default us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-base-builder /bin/bash
+docker run --rm -it -v ~/track:/app --network docker_default us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-migration-runner /bin/bash

@@ -40,16 +40,13 @@ jobs:
 
       - name: Copy docker compose files
         run: |
-          ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<EOF
-            rm -r ./docker || true
-          EOF
-          scp -i ~/.ssh/private_key.pem -r ./docker/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/docker
+          scp -i ~/.ssh/private_key.pem -r ./docker/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/track/
           echo "creating alias script"
           ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<"ENDSSH"
-            echo "dc() {" > docker/alias
-            echo "    APP_ENV=${{ vars.APP_ENV }} HOST_PORT=${{ vars.HOST_PORT }} POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} docker compose -f docker/base.yml -f docker/prod.yml \"\$@\"" >> docker/alias
-            echo "}" >> docker/alias
-            chmod +x docker/alias
+            echo "dc() {" > track/alias
+            echo "    APP_ENV=${{ vars.APP_ENV }} HOST_PORT=${{ vars.HOST_PORT }} POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} docker compose -f track/base.yml -f track/prod.yml \"\$@\"" >> track/alias
+            echo "}" >> track/alias
+            chmod +x track/alias
           ENDSSH
           echo "created alias script"
 
@@ -76,12 +73,12 @@ jobs:
           ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<"ENDSSH"
             gcloud auth activate-service-account --key-file=/tmp/gcp-sa-key.json
             gcloud auth configure-docker us-central1-docker.pkg.dev
-            # rm /tmp/gcp-sa-key.json
+            rm /tmp/gcp-sa-key.json
 
             export APP_ENV=${{ vars.APP_ENV }}
             export HOST_PORT=${{ vars.HOST_PORT }}
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            docker compose -f docker/base.yml -f docker/prod.yml pull
-            docker compose -f docker/base.yml -f docker/prod.yml down
-            docker compose -f docker/base.yml -f docker/prod.yml up -d
+            docker compose -f track/base.yml -f track/prod.yml pull
+            docker compose -f track/base.yml -f track/prod.yml down
+            docker compose -f track/base.yml -f track/prod.yml up -d
           ENDSSH
