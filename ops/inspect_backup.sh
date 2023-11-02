@@ -51,7 +51,7 @@ docker run --name temp-postgres \
     -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
     -v "$PWD/$DECOMPRESSED_FILE:/docker-entrypoint-initdb.d/dump.sql" \
     -v "$VOLUME_NAME:/var/lib/postgresql/data" \
-    -d postgres
+    -d trackdb
 
 # Check if container started successfully
 if [ $? -ne 0 ]; then
@@ -61,4 +61,4 @@ fi
 
 echo "PostgreSQL container started successfully."
 
-docker exec -it temp-postgres bash -c "sleep 1; psql -U postgres -d postgres"
+docker exec -it temp-postgres bash -c "sleep 1; psql -U postgres -d trackdb"

@@ -67,13 +67,12 @@ jobs:
             docker compose -f track/base.yml -f track/prod.yml up -d db
 
             echo "Preparing for restore."
-            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'postgres' AND pid <> pg_backend_pid();"
-            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "DROP DATABASE IF EXISTS postgres;"
-            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "CREATE DATABASE postgres;"
+            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "DROP DATABASE IF EXISTS trackdb;"
+            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "CREATE DATABASE trackdb;"
 
             echo "Restoring from backup."
             docker compose -f track/base.yml -f track/prod.yml cp ./track/$BACKUP_FILE db:/backup
-            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -d postgres -f /backup
+            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -d trackdb -f /backup
 
             echo "Bringing down db."
             docker compose -f track/base.yml -f track/prod.yml down

@@ -33,7 +33,7 @@ jobs:
             echo "Container name is: \$CONTAINER_NAME"
             # Run pg_dump inside the container to create the backup
             echo "Creating database backup..."
-            docker exec \$CONTAINER_NAME pg_dump -U postgres -h localhost postgres | gzip > /tmp/$BACKUP_NAME
+            docker exec \$CONTAINER_NAME pg_dump -U postgres -h localhost trackdb | gzip > /tmp/$BACKUP_NAME
             echo "Done creating database backup."
           ENDSSH
 
