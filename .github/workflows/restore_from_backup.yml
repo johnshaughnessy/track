@@ -63,24 +63,53 @@ jobs:
             echo "Bringing down services."
             docker compose -f track/base.yml -f track/prod.yml down
 
+            # echo "Starting db service in isolation."
+            # docker compose -f track/base.yml -f track/prod.yml up -d db
+
+            # echo "Preparing for restore."
+            # docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "DROP DATABASE IF EXISTS trackdb;"
+            # docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "CREATE DATABASE trackdb;"
+
+            # echo "Restoring from backup."
+            # docker compose -f track/base.yml -f track/prod.yml cp ./track/$BACKUP_FILE db:/backup
+            # docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -d trackdb -f /backup
+
+            # echo "Bringing down db."
+            # docker compose -f track/base.yml -f track/prod.yml down
+
+            # echo "Bringing up all services."
+            # docker compose -f track/base.yml -f track/prod.yml up -d
+
+            # echo "Status:"
+            # docker compose -f track/base.yml -f track/prod.yml ps
+
             echo "Starting db service in isolation."
-            docker compose -f track/base.yml -f track/prod.yml up -d db
+            docker compose -f track/base.yml -f track/prod.yml up -d db || { echo "Failed to start db service"; exit 1; }
+
+            echo "Waiting for database to initialize..."
+            sleep 3  # Wait to ensure db is up. Adjust time as needed.
 
             echo "Preparing for restore."
-            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "DROP DATABASE IF EXISTS trackdb;"
-            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "CREATE DATABASE trackdb;"
+            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "DROP DATABASE IF EXISTS trackdb;" || { echo "Failed to drop database"; exit 1; }
+            sleep 1
+            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -c "CREATE DATABASE trackdb;" || { echo "Failed to create database"; exit 1; }
+
+            echo "Waiting for new database to be ready..."
+            sleep 3  # Wait for a few seconds. Adjust time as needed.
 
             echo "Restoring from backup."
-            docker compose -f track/base.yml -f track/prod.yml cp ./track/$BACKUP_FILE db:/backup
-            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -d trackdb -f /backup
+            docker compose -f track/base.yml -f track/prod.yml cp ./track/$BACKUP_FILE db:/backup || { echo "Failed to copy backup file"; exit 1; }
+            docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -d trackdb -f /backup || { echo "Failed to restore database from backup"; exit 1; }
 
+            sleep 3  # Wait for a few seconds. Adjust time as needed.
             echo "Bringing down db."
-            docker compose -f track/base.yml -f track/prod.yml down
+            docker compose -f track/base.yml -f track/prod.yml down || { echo "Failed to bring down db"; exit 1; }
 
             echo "Bringing up all services."
-            docker compose -f track/base.yml -f track/prod.yml up -d
+            docker compose -f track/base.yml -f track/prod.yml up -d || { echo "Failed to bring up all services"; exit 1; }
 
             echo "Status:"
             docker compose -f track/base.yml -f track/prod.yml ps
+
 
           ENDSSH
