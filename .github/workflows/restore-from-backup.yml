@@ -74,104 +74,25 @@ jobs:
             docker compose -f track/base.yml -f track/prod.yml down
             docker compose -f track/base.yml -f track/prod.yml up -d db
             sleep 5
-            docker compose -f track/base.yml -f track/prod.yml exec db ls < /dev/null
-            docker compose -f track/base.yml -f track/prod.yml exec db ls < /dev/null
+            docker compose -f track/base.yml -f track/prod.yml exec --interactive=false db psql -U postgres -c "DROP DATABASE IF EXISTS trackdb;"
+            sleep 2
+            docker compose -f track/base.yml -f track/prod.yml exec --interactive=false db psql -U postgres -c "CREATE DATABASE trackdb;"
+            sleep 2
+
+            docker compose -f track/base.yml -f track/prod.yml cp track/backups/$BACKUP_NAME db:/backup
+            docker compose -f track/base.yml -f track/prod.yml exec --interactive=false db psql -U postgres -d trackdb -f /backup
+            sleep 2
+
+            docker compose -f track/base.yml -f track/prod.yml down
+            sleep 2
+            docker compose -f track/base.yml -f track/prod.yml up -d
+            sleep 5
+            docker compose -f track/base.yml -f track/prod.yml ps
+            docker compose -f track/base.yml -f track/prod.yml exec --interactive=false db psql -U postgres -c "SELECT * FROM weights;"
+            sleep 2
 
           EOF
 
           echo "END"
-
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-          #   "rm -r /home/${{ secrets.SERVER_USER }}/track/backups/ || true"
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-          #   "mkdir -p /home/${{ secrets.SERVER_USER }}/track/backups/"
-
-          # scp -i ~/.ssh/private_key.pem $BACKUP_FILE ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/track/$BACKUP_FILE
-
-          # echo "Available backups:"
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-          #   ls ./track/backups/
-
-          # echo "Available backups:"
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-          #   ls ./track/$BACKUP_FILE
-
-          # echo "Bringing down docker containers."
-
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "whoami; hostname; docker compose -f track/base.yml -f track/prod.yml down"
-
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml down"
-
-          # echo "Status:"
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml ps"
-
-          # echo "Starting db service in isolation."
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml up -d db"
-
-          # echo "Status:"
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml ps"
-
-          # echo "A"
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml exec db echo \"hello world!\""
-
-          # echo "B"
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml exec db echo \"goodbyeworld!\""
-
-          # echo "C"
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "docker compose -f track/base.yml -f track/prod.yml exec -T db psql -U postgres -c \"DROP DATABASE IF EXISTS trackdb;\""
-
-          # echo "D"
-
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-          #   docker compose -f track/base.yml -f track/prod.yml exec -T db psql -U postgres -c "CREATE DATABASE trackdb;"
-
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-          #   docker compose -f track/base.yml -f track/prod.yml cp ./track/$BACKUP_FILE db:/backup
-
-          # ssh -i ~/.ssh/private_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << ENDSSH
-          #   ls ./track/backups/
-
-          #   export APP_ENV=${{ vars.APP_ENV }}
-          #   export HOST_PORT=${{ vars.HOST_PORT }}
-          #   export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-
-          #   # Restore from backup. The postgres docker service is called "db"
-          #   echo "Bringing down services."
-          #   docker compose -f track/base.yml -f track/prod.yml down
-
-          #   echo "Status:"
-          #   docker compose -f track/base.yml -f track/prod.yml ps
-
-          #   echo "Starting db service in isolation."
-          #   docker compose -f track/base.yml -f track/prod.yml up -d db
-
-          #   echo "Status:"
-          #   docker compose -f track/base.yml -f track/prod.yml ps
-
-          #   echo "Preparing for restore."
-          #   #docker compose -f track/base.yml -f track/prod.yml exec db echo "hello world!"
-          #   echo "A"
-          #   #docker compose -f track/base.yml -f track/prod.yml exec -T db echo "hello world!" || true
-          #   output=$(docker compose -f track/base.yml -f track/prod.yml exec db echo "hello world!") || true
-          #   echo "$output"
-          #   echo "B"
-
-
-          #   docker compose -f track/base.yml -f track/prod.yml exec -T db echo "hello world 2!"
-          #   docker compose -f track/base.yml -f track/prod.yml exec -T db psql -U postgres -c "DROP DATABASE IF EXISTS trackdb;"
-          #   docker compose -f track/base.yml -f track/prod.yml exec -T db psql -U postgres -c "CREATE DATABASE trackdb;"
-
-          #   echo "Restoring from backup."
-          #   docker compose -f track/base.yml -f track/prod.yml cp ./track/$BACKUP_FILE db:/backup
-          #   docker compose -f track/base.yml -f track/prod.yml exec db psql -U postgres -d trackdb -f /backup
-
-          #   echo "Bringing down db."
-          #   docker compose -f track/base.yml -f track/prod.yml down
-
-          #   echo "Bringing up all services."
-          #   docker compose -f track/base.yml -f track/prod.yml up -d
-
-          #   echo "Status:"
-          #   docker compose -f track/base.yml -f track/prod.yml ps
 
           # ENDSSH
