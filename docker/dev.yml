@@ -2,7 +2,16 @@ version: "3.1"
 services:
   track-server:
     build:
-      context: ../server
-      dockerfile: Dockerfile.dev
+      context: ..
+      dockerfile: server/Dockerfile.dev
     volumes:
-      - ../server:/app
+      - ../server:/track-server
+
+  track-web-client:
+    build:
+      context: ..
+      dockerfile: web-client/Dockerfile.dev
+    environment:
+      - APP_ENV=${APP_ENV}
+    volumes:
+      - ../web-client:/track-web-client
