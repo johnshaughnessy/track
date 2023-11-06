@@ -5,7 +5,7 @@ services:
       context: ..
       dockerfile: server/Dockerfile.dev
     volumes:
-      - ../server:/track-server
+      - ../:/track
 
   track-web-client:
     build:
@@ -14,4 +14,6 @@ services:
     environment:
       - APP_ENV=${APP_ENV}
     volumes:
-      - ../web-client:/track-web-client
+      - ../:/track
+    ports:
+      - 8888:8888
