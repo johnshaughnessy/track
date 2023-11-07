@@ -1,0 +1,68 @@
+---
+name: Deploy client
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Deployment environment"
+        required: true
+        default: "staging"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      env: ${{ steps.setenv.outputs.env }}
+    steps:
+      - name: Validate environment
+        id: setenv
+        run: |
+          if [[ "${{ github.event.inputs.env }}" != "prod" && "${{ github.event.inputs.env }}" != "staging" ]]; then
+            echo "Error: Invalid environment specified. Can only be 'prod' or 'staging'."
+            exit 1
+          fi
+
+  deploy_static_files:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # - name: Install gsutil
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get -y install google-cloud-sdk
+
+      - name: Determine latest web-client tarball
+        id: latest-tarball
+        run: |
+          LATEST_TARBALL=$(gsutil ls gs://ocho-osai/track/web-client-builds/ | sort | tail -n1)
+          echo "Latest tarball: $LATEST_TARBALL"
+          echo "::set-output name=tarball::$LATEST_TARBALL"
+
+      - name: Download the latest tarball
+        run: |
+          gsutil cp ${{ steps.latest-tarball.outputs.tarball }} web-client.tar.gz
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: SCP tarball to server
+        run: |
+          scp -i ~/.ssh/id_rsa web-client.tar.gz ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp
+
+      - name: Replace static files on server
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'bash -s' << 'ENDSSH'
+            mkdir -p /track/server/static/client
+            tar -xzvf /tmp/web-client.tar.gz -C /track/server/static/client --strip-components=1
+            rm /tmp/web-client.tar.gz
+          ENDSSH
