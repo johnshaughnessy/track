@@ -9,7 +9,7 @@ More details are in the [wiki](https://github.com/johnshaughnessy/track/wiki).
 Source the script that creates an alias for docker compose:
 
 ```sh
-source bin/alias-docker-compose
+source ops/alias-docker-compose
 ```
 
 Build the docker dev environment:

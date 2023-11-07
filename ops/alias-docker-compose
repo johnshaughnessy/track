@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Usage:
-#   source ./bin/alias-docker-compose
+#   source ./ops/alias-docker-compose
 #
 # Then you can run docker compose commands such as
 #
