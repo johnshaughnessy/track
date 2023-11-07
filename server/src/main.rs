@@ -1,6 +1,7 @@
 extern crate diesel;
 
 use actix_cors::Cors;
+use actix_files as fs;
 use actix_web::{http, web, App, HttpServer};
 use diesel::r2d2::{self, ConnectionManager};
 use diesel::PgConnection;
@@ -47,6 +48,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(pool.clone()))
+            .service(fs::Files::new("/", "/track/server/static/client/").index_file("index.html"))
             .service(
                 web::scope("/api")
                     .service(
