@@ -37,7 +37,6 @@ pub struct CreateWeightPayload {
 #[diesel(table_name = crate::schema::weights)]
 pub struct UpdateWeightPayload {
     pub measured_at: NaiveDateTime,
-
     pub weight_kg: f64,
 }
 

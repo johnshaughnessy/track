@@ -2169,16 +2169,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d046c5d029ba91a1ed14da14dca44b68bf2f124cfbaf741c54151fdb3e0750b"
 
 [[package]]
-name = "web-client"
-version = "0.1.0"
-dependencies = [
- "gloo-net 0.4.0",
- "serde",
- "wasm-bindgen-futures",
- "yew",
-]
-
-[[package]]
 name = "web-sys"
 version = "0.3.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2186,6 +2176,20 @@ checksum = "5db499c5f66323272151db0e666cd34f78617522fb0c1604d31a27c50c206a85"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "web_client"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "gloo-net 0.4.0",
+ "rand",
+ "serde",
+ "serde_derive",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "yew",
 ]
 
 [[package]]
