@@ -34,7 +34,7 @@ async fn main() -> std::io::Result<()> {
                 .allowed_header(http::header::CONTENT_TYPE)
                 .max_age(3600),
             ref x if x == "prod" => Cors::default()
-                .allowed_origin("https://www.example.com")
+                .allow_any_origin()
                 .allowed_methods(vec!["GET", "POST", "PATCH", "DELETE"])
                 .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
                 .allowed_header(http::header::CONTENT_TYPE)
@@ -42,26 +42,26 @@ async fn main() -> std::io::Result<()> {
             _ => panic!("APP_ENV must be set to either 'dev' or 'prod'"),
         };
 
-        println!("APP_ENV: {:?}", std::env::var("APP_ENV"));
-        println!("cors: {:?}", cors);
+        log::info!("APP_ENV: {:?}", std::env::var("APP_ENV"));
+        log::info!("cors: {:?}", cors);
 
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(pool.clone()))
-            .service(fs::Files::new("/", "/track/server/static/client/").index_file("index.html"))
             .service(
                 web::scope("/api")
-                    .service(
-                        web::resource("/weights")
-                            .route(web::get().to(api::get_weights))
-                            .route(web::post().to(api::post_weights)),
-                    )
                     .service(
                         web::resource("/weights/{weight_id}")
                             .route(web::patch().to(api::patch_weights))
                             .route(web::delete().to(api::delete_weights)),
+                    )
+                    .service(
+                        web::resource("/weights")
+                            .route(web::get().to(api::get_weights))
+                            .route(web::post().to(api::post_weights)),
                     ),
             )
+            .service(fs::Files::new("/", "/track/server/static/client/").index_file("index.html"))
     })
     .bind(format!("{}:{}", ip_address, port))?
     .run()

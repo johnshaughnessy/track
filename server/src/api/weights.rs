@@ -16,14 +16,14 @@ pub async fn post_weights(
 }
 
 pub async fn get_weights(pool: web::Data<Pool<ConnectionManager<PgConnection>>>) -> impl Responder {
+    log::info!("get_weights");
     let mut conn = pool.get().unwrap();
 
     match server::models::weights::read_weights(&mut conn) {
         Ok(weights) => HttpResponse::Ok().json(weights),
         Err(e) => {
             HttpResponse::InternalServerError().body(format!("Error retrieving weights: {:?}", e))
-        }
-        //        Err(_) => HttpResponse::InternalServerError().body("Error retrieving weights."),
+        } //        Err(_) => HttpResponse::InternalServerError().body("Error retrieving weights."),
     }
 }
 
