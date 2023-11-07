@@ -4,3 +4,5 @@ RUN rustup target add wasm32-unknown-unknown
 RUN cargo install trunk
 COPY . .
 WORKDIR /track
+RUN trunk build web-client/index.html # Build once so that dependencies are cached
+RUN rm -rf web-client/dist # The built files are not needed in the final image
