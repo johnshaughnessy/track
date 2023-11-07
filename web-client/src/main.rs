@@ -40,14 +40,15 @@ fn App() -> Html {
         Callback::from(move |_| {
             let weights = weights.clone();
             spawn_local(async move {
-                let fetched_weights: Vec<Weight> =
-                    Request::get("http://localhost:8080/api/weights")
-                        .send()
-                        .await
-                        .expect("Failed to fetch weights")
-                        .json()
-                        .await
-                        .expect("Failed to deserialize weights");
+                let origin = web_sys::window().unwrap().location().origin().unwrap();
+                let request_url = format!("{}/api/weights", origin);
+                let fetched_weights: Vec<Weight> = Request::get(&request_url)
+                    .send()
+                    .await
+                    .expect("Failed to fetch weights")
+                    .json()
+                    .await
+                    .expect("Failed to deserialize weights");
                 weights.set(fetched_weights);
             });
         })
@@ -72,7 +73,10 @@ fn App() -> Html {
                     measured_at: chrono::Utc::now().naive_utc(),
                     weight_kg,
                 };
-                let _ = Request::post("http://localhost:8080/api/weights")
+
+                let origin = web_sys::window().unwrap().location().origin().unwrap();
+                let request_url = format!("{}/api/weights", origin);
+                let _ = Request::post(&request_url)
                     .json(&new_weight)
                     .expect("Failed to serialize new weight")
                     .send()
@@ -91,18 +95,17 @@ fn App() -> Html {
             Callback::from(move |_| {
                 let fetch_weights = fetch_weights.clone();
                 spawn_local(async move {
-                    let _ = Request::delete(&format!(
-                        "http://localhost:8080/api/weights/{}",
-                        weight_id
-                    ))
-                    .send()
-                    .await
-                    .map(|_| {
-                        fetch_weights.emit(());
-                    })
-                    .map_err(|err| {
-                        log::error!("Failed to delete weight: {:?}", err);
-                    });
+                    let origin = web_sys::window().unwrap().location().origin().unwrap();
+                    let request_url = format!("{}/api/weights/{}", origin, weight_id);
+                    let _ = Request::delete(&request_url)
+                        .send()
+                        .await
+                        .map(|_| {
+                            fetch_weights.emit(());
+                        })
+                        .map_err(|err| {
+                            log::error!("Failed to delete weight: {:?}", err);
+                        });
                 });
             })
         }
