@@ -1,26 +1,78 @@
-button {
-  background-color: #008f53; /* Green */
-  border: 0;
-  color: white;
-  padding: 14px 14px;
-  text-align: center;
-  font-size: 16px;
-  margin: 2px 2px;
-  width: 100px;
-}
+.weight-app {
+  font-family: "Arial", sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 10px;
 
-.counter {
-  color: #008f53;
-  font-size: 48px;
-  text-align: center;
-}
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
 
-.footer {
-  text-align: center;
-  font-size: 12px;
-}
+  .fetch-button,
+  .create-button {
+    flex: 1;
+    margin: 0 5px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #4caf50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
 
-.panel {
-  display: flex;
-  justify-content: center;
+    &:hover {
+      background-color: darken(#4caf50, 10%);
+    }
+  }
+
+  .weight-list {
+    .weight-item {
+      background-color: #f9f9f9;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      .weight-details {
+        margin-bottom: 10px;
+
+        .weight-id,
+        .weight-date,
+        .weight-kg {
+          font-size: 14px;
+          color: #333;
+        }
+      }
+
+      .weight-actions {
+        display: flex;
+        justify-content: flex-end;
+
+        .delete-button,
+        .edit-button {
+          padding: 5px 10px;
+          margin-left: 5px;
+          border-radius: 3px;
+          border: none;
+          cursor: pointer;
+
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+
+        .delete-button {
+          background-color: #f44336;
+          color: white;
+        }
+
+        .edit-button {
+          background-color: #2196f3;
+          color: white;
+        }
+      }
+    }
+  }
 }

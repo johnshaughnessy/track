@@ -100,30 +100,61 @@ fn App() -> Html {
         }
     };
 
-    html! {
-        <div>
-            <button onclick={Callback::from(move |_| fetch_weights.emit(()))}>{ "Fetch Weights" }</button>
-            <button onclick={create_weight}>{ "Create Weight" }</button>
-            <div>
-            {
-                for weights.iter().map(|weight| {
-                    let delete_callback = make_delete_callback(weight.weight_id);
-                    let edit_callback = make_edit_callback(weight.weight_id);
+    // html! {
+    //     <div>
+    //         <button onclick={Callback::from(move |_| fetch_weights.emit(()))}>{ "Fetch Weights" }</button>
+    //         <button onclick={create_weight}>{ "Create Weight" }</button>
+    //         <div>
+    //         {
+    //             for weights.iter().map(|weight| {
+    //                 let delete_callback = make_delete_callback(weight.weight_id);
+    //                 let edit_callback = make_edit_callback(weight.weight_id);
 
-                    html! {
-                        <div>
-                            <p>{ format!("weight_id: {}", weight.weight_id) }</p>
-                            <p>{ format!("measured_at: {}", weight.measured_at) }</p>
-                            <p>{ format!("weight_kg: {}", weight.weight_kg) }</p>
-                            <button onclick={delete_callback}>{ "Delete" }</button>
-                            <button onclick={edit_callback}>{ "Edit" }</button>
-                        </div>
-                    }
-                })
-            }
-            </div>
+    //                 html! {
+    //                     <div>
+    //                         <p>{ format!("weight_id: {}", weight.weight_id) }</p>
+    //                         <p>{ format!("measured_at: {}", weight.measured_at) }</p>
+    //                         <p>{ format!("weight_kg: {}", weight.weight_kg) }</p>
+    //                         <button onclick={delete_callback}>{ "Delete" }</button>
+    //                         <button onclick={edit_callback}>{ "Edit" }</button>
+    //                     </div>
+    //                 }
+    //             })
+    //         }
+    //         </div>
+    //     </div>
+    // }
+    html! {
+    <div class="weight-app">
+        <div class="top-bar">
+            <button class="fetch-button" onclick={Callback::from(move |_| fetch_weights.emit(()))}>{ "Fetch Weights" }</button>
+            <button class="create-button" onclick={create_weight}>{ "Create Weight" }</button>
         </div>
-    }
+        <div class="weight-list">
+        {
+            for weights.iter().map(|weight| {
+                let delete_callback = make_delete_callback(weight.weight_id);
+                let edit_callback = make_edit_callback(weight.weight_id);
+
+                html! {
+                    <div class="weight-item">
+                        <div class="weight-details">
+                            <p class="weight-id">{ format!("ID: {}", weight.weight_id) }</p>
+                            <p class="weight-date">{ format!("Date: {}", weight.measured_at) }</p>
+                            <p class="weight-kg">{ format!("{} kg", weight.weight_kg) }</p>
+                        </div>
+                        <div class="weight-actions">
+                            <button class="delete-button" onclick={delete_callback}>{ "Delete" }</button>
+                            <button class="edit-button" onclick={edit_callback}>{ "Edit" }</button>
+                        </div>
+                    </div>
+                }
+            })
+        }
+        </div>
+    </div>
+
+        }
 }
 
 fn main() {
