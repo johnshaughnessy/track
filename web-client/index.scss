@@ -135,36 +135,37 @@ $themes: (
       background-color: var(--item-bg-color);
       border-radius: 5px;
       margin-bottom: 10px;
-      padding: 10px; // Reduced padding for less vertical space
+      padding: 10px;
       box-shadow: 0 2px 4px var(--shadow-color);
+      display: flex;
+      justify-content: space-between; // Spread content across the card
+      align-items: center;
 
       .weight-details {
-        display: flex; // Changed to flex for a more compact layout
-        justify-content: space-between; // Spread the details across the card
+        display: flex; // Use flex for laying out details
         align-items: center;
+        flex-grow: 1; // Allow details to fill available space
 
-        .weight-id,
-        .weight-date,
         .weight-lbs,
-        .weight-kg {
-          font-size: 14px; // Reduced font size for less vertical space
+        .weight-date {
+          font-size: 18px; // Larger font size for readability
           color: var(--text-color);
-          margin: 0; // Remove margins for a tighter layout
+          margin: 0 10px; // Add horizontal spacing
         }
       }
 
       .weight-actions {
         display: flex;
-        justify-content: flex-end;
+        // No need for margin-top as they are on the same row now
 
         .delete-button,
         .edit-button {
-          padding: 5px 10px;
-          margin-left: 5px;
-          border-radius: 3px;
+          padding: 8px 12px; // Adjust padding for a balanced look
+          margin-left: 10px; // Keep space between buttons
+          border-radius: 5px;
           border: none;
           cursor: pointer;
-          font-size: 14px; // Ensure text fits well in the smaller buttons
+          font-size: 16px;
 
           &:hover {
             opacity: 0.8;

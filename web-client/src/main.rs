@@ -152,9 +152,9 @@ fn App() -> Html {
                         <div class="weight-item">
                             <div class="weight-details">
                                 // <p class="weight-id">{ format!("ID: {}", weight.weight_id) }</p>
-                                <p class="weight-date">{ format!("{}", formatted_time) }</p>
                                 // <p class="weight-kg">{ format!("{:.1} kg", weight.weight_kg) }</p>
                                 <p class="weight-lbs">{ format!("{:.1} lbs", weight_in_lbs) }</p>
+                                <p class="weight-date">{ format!("{}", formatted_time) }</p>
                             </div>
                             <div class="weight-actions">
                                 <button class="delete-button" onclick={delete_callback}>{ "Delete" }</button>
