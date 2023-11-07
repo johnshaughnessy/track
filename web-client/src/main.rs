@@ -112,7 +112,7 @@ fn App() -> Html {
             theme_index.set(next_index);
 
             // print the current theme
-            web_sys::console::log_1(&format!("theme: {}", themes[next_index]).into());
+            // web_sys::console::log_1(&format!("theme: {}", themes[next_index]).into());
         })
     };
 
@@ -128,7 +128,7 @@ fn App() -> Html {
             theme_index.set(prev_index);
 
             // print the current theme
-            web_sys::console::log_1(&format!("theme: {}", themes[prev_index]).into());
+            // web_sys::console::log_1(&format!("theme: {}", themes[prev_index]).into());
         })
     };
 
