@@ -2184,6 +2184,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "gloo-net 0.4.0",
+ "log",
  "rand",
  "serde",
  "serde_derive",

@@ -8,6 +8,29 @@ use rand::Rng;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
+struct ConsoleLogger;
+impl log::Log for ConsoleLogger {
+    fn enabled(&self, metadata: &log::Metadata) -> bool {
+        match metadata.level() {
+            log::Level::Error => true,
+            log::Level::Warn => true,
+            log::Level::Info => true,
+            log::Level::Debug => true,
+            log::Level::Trace => true, // Adjust the conditions based on your log level setting
+        }
+    }
+
+    fn log(&self, record: &log::Record) {
+        if self.enabled(record.metadata()) {
+            web_sys::console::log_1(&format!("{} - {}", record.level(), record.args()).into());
+        }
+    }
+
+    fn flush(&self) {}
+}
+
+static LOGGER: ConsoleLogger = ConsoleLogger;
+
 #[function_component]
 fn App() -> Html {
     let weights = use_state(|| vec![]);
@@ -78,9 +101,7 @@ fn App() -> Html {
                         fetch_weights.emit(());
                     })
                     .map_err(|err| {
-                        web_sys::console::error_1(
-                            &format!("Failed to delete weight: {:?}", err).into(),
-                        );
+                        log::error!("Failed to delete weight: {:?}", err);
                     });
                 });
             })
@@ -92,10 +113,8 @@ fn App() -> Html {
         move |weight_id| {
             let fetch_weights = fetch_weights.clone();
             Callback::from(move |_| {
-                // Log "TODO" to the console
-                web_sys::console::log_1(&"TODO".into());
-                // Also log the weight_id
-                web_sys::console::log_1(&format!("weight_id: {}", weight_id).into());
+                log::info!("TODO");
+                log::info!("weight_id: {}", weight_id);
                 fetch_weights.emit(());
             })
         }
@@ -112,7 +131,7 @@ fn App() -> Html {
             theme_index.set(next_index);
 
             // print the current theme
-            // web_sys::console::log_1(&format!("theme: {}", themes[next_index]).into());
+            log::info!("theme: {}", themes[next_index]);
         })
     };
 
@@ -128,7 +147,7 @@ fn App() -> Html {
             theme_index.set(prev_index);
 
             // print the current theme
-            // web_sys::console::log_1(&format!("theme: {}", themes[prev_index]).into());
+            log::info!("theme: {}", themes[prev_index]);
         })
     };
 
@@ -169,5 +188,7 @@ fn App() -> Html {
 }
 
 fn main() {
+    log::set_logger(&LOGGER).unwrap();
+    log::set_max_level(log::LevelFilter::Trace);
     yew::Renderer::<App>::new().render();
 }
