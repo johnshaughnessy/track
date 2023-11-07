@@ -1,3 +1,104 @@
+$themes: (
+  dark: (
+    primary-bg-color: #37474f,
+    primary-bg-color-hover: #62727b,
+    danger-bg-color: #dd2c00,
+    info-bg-color: #78909c,
+    text-color: #cfd8dc,
+    button-text-color: #ffffff,
+    item-bg-color: #263238,
+    shadow-color: rgba(0, 0, 0, 0.7),
+  ),
+  light: (
+    primary-bg-color: #eceff1,
+    primary-bg-color-hover: #cfd8dc,
+    danger-bg-color: #ff5252,
+    info-bg-color: #29b6f6,
+    text-color: #263238,
+    button-text-color: #263238,
+    item-bg-color: #fafafa,
+    shadow-color: rgba(0, 0, 0, 0.1),
+  ),
+  warm: (
+    primary-bg-color: #ffab91,
+    primary-bg-color-hover: #ff8a65,
+    danger-bg-color: #e64a19,
+    info-bg-color: #ffccbc,
+    text-color: #5d4037,
+    button-text-color: #3e2723,
+    item-bg-color: #ffe0b2,
+    shadow-color: rgba(0, 0, 0, 0.1),
+  ),
+  cool: (
+    primary-bg-color: #80deea,
+    primary-bg-color-hover: #4dd0e1,
+    danger-bg-color: #00acc1,
+    info-bg-color: #26c6da,
+    text-color: #37474f,
+    button-text-color: #263238,
+    item-bg-color: #e0f7fa,
+    shadow-color: rgba(0, 0, 0, 0.1),
+  ),
+  gruvbox: (
+    primary-bg-color: #d79921,
+    primary-bg-color-hover: #b57614,
+    danger-bg-color: #cc241d,
+    info-bg-color: #458588,
+    text-color: #ebdbb2,
+    button-text-color: #ebdbb2,
+    item-bg-color: #282828,
+    shadow-color: rgba(0, 0, 0, 0.7),
+  ),
+);
+
+// SCSS mixin to apply the theme
+@mixin apply-theme($theme-name) {
+  $theme-map: map-get($themes, $theme-name);
+  --primary-bg-color: #{map-get($theme-map, primary-bg-color)};
+  --primary-bg-color-hover: #{map-get($theme-map, primary-bg-color-hover)};
+  --danger-bg-color: #{map-get($theme-map, danger-bg-color)};
+  --info-bg-color: #{map-get($theme-map, info-bg-color)};
+  --text-color: #{map-get($theme-map, text-color)};
+  --button-text-color: #{map-get($theme-map, button-text-color)};
+  --item-bg-color: #{map-get($theme-map, item-bg-color)};
+  --shadow-color: #{map-get($theme-map, shadow-color)};
+}
+
+// @mixin apply-theme($theme-name) {
+//   $theme-map: map-get($themes, $theme-name);
+//   --primary-bg-color: map-get($theme-map, primary-bg-color);
+//   --danger-bg-color: map-get($theme-map, danger-bg-color);
+//   --info-bg-color: map-get($theme-map, info-bg-color);
+//   --text-color: map-get($theme-map, text-color);
+//   --button-text-color: map-get($theme-map, button-text-color);
+//   --item-bg-color: map-get($theme-map, item-bg-color);
+//   --shadow-color: map-get($theme-map, shadow-color);
+// }
+
+:root {
+  @include apply-theme(gruvbox); // Default theme
+}
+
+.weight-app.dark-mode {
+  @include apply-theme(dark);
+}
+
+.weight-app.light-mode {
+  @include apply-theme(light);
+}
+
+.weight-app.warm {
+  @include apply-theme(warm);
+}
+
+.weight-app.cool {
+  @include apply-theme(cool);
+}
+
+.weight-app.gruvbox {
+  @include apply-theme(gruvbox);
+}
+
 .weight-app {
   font-family: "Arial", sans-serif;
   max-width: 600px;
@@ -10,6 +111,8 @@
     margin-bottom: 20px;
   }
 
+  .prev-button,
+  .next-button,
   .fetch-button,
   .create-button {
     flex: 1;
@@ -17,32 +120,36 @@
     padding: 10px;
     border-radius: 5px;
     border: none;
-    background-color: #4caf50;
-    color: white;
+    background-color: var(--primary-bg-color);
+    color: var(--button-text-color);
     font-size: 16px;
     cursor: pointer;
 
     &:hover {
-      background-color: darken(#4caf50, 10%);
+      background-color: var(--primary-bg-color-hover);
     }
   }
 
   .weight-list {
     .weight-item {
-      background-color: #f9f9f9;
+      background-color: var(--item-bg-color);
       border-radius: 5px;
       margin-bottom: 10px;
-      padding: 15px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 10px; // Reduced padding for less vertical space
+      box-shadow: 0 2px 4px var(--shadow-color);
 
       .weight-details {
-        margin-bottom: 10px;
+        display: flex; // Changed to flex for a more compact layout
+        justify-content: space-between; // Spread the details across the card
+        align-items: center;
 
         .weight-id,
         .weight-date,
+        .weight-lbs,
         .weight-kg {
-          font-size: 14px;
-          color: #333;
+          font-size: 14px; // Reduced font size for less vertical space
+          color: var(--text-color);
+          margin: 0; // Remove margins for a tighter layout
         }
       }
 
@@ -57,6 +164,7 @@
           border-radius: 3px;
           border: none;
           cursor: pointer;
+          font-size: 14px; // Ensure text fits well in the smaller buttons
 
           &:hover {
             opacity: 0.8;
@@ -64,15 +172,33 @@
         }
 
         .delete-button {
-          background-color: #f44336;
-          color: white;
+          background-color: var(--danger-bg-color);
+          color: var(--button-text-color);
         }
 
         .edit-button {
-          background-color: #2196f3;
-          color: white;
+          background-color: var(--info-bg-color);
+          color: var(--button-text-color);
         }
       }
+    }
+  }
+  .theme-label {
+    flex: 2;
+    text-align: center;
+    background-color: var(--primary-bg-color);
+    color: var(--button-text-color);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 0 5px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px var(--shadow-color);
+
+    &:hover {
+      background-color: var(--primary-bg-color-hover);
     }
   }
 }
