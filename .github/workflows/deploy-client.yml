@@ -69,7 +69,7 @@ jobs:
       - name: Replace static files on server
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'bash -s' << 'ENDSSH'
-            mkdir -p /track/server/static/client
-            tar -xzvf /tmp/web-client.tar.gz -C /track/server/static/client --strip-components=1
+            mkdir -p ~/track/server/static/client
+            tar -xzvf /tmp/web-client.tar.gz -C ~/track/server/static/client --strip-components=1
             rm /tmp/web-client.tar.gz
           ENDSSH

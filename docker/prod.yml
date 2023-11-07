@@ -2,3 +2,5 @@ version: "3.1"
 services:
   track-server:
     image: us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-server
+    volumes:
+      - ./track:/track

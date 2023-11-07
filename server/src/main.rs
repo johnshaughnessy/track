@@ -27,19 +27,19 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let cors = match app_env {
-            ref x if x == "development" => Cors::default()
+            ref x if x == "dev" => Cors::default()
                 .allow_any_origin()
                 .allowed_methods(vec!["GET", "POST", "PATCH", "DELETE"])
                 .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
                 .allowed_header(http::header::CONTENT_TYPE)
                 .max_age(3600),
-            ref x if x == "production" => Cors::default()
+            ref x if x == "prod" => Cors::default()
                 .allowed_origin("https://www.example.com")
                 .allowed_methods(vec!["GET", "POST", "PATCH", "DELETE"])
                 .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
                 .allowed_header(http::header::CONTENT_TYPE)
                 .max_age(3600),
-            _ => panic!("APP_ENV must be set to either 'development' or 'production'"),
+            _ => panic!("APP_ENV must be set to either 'dev' or 'prod'"),
         };
 
         println!("APP_ENV: {:?}", std::env::var("APP_ENV"));

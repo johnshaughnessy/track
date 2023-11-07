@@ -51,7 +51,7 @@ Alternatively, you can start the server with:
 ```sh
 dc exec -it track-server bash
 
-APP_ENV="development" cargo run --bin server
+APP_ENV="dev" cargo run --bin server
 ```
 
 And the client with
