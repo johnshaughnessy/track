@@ -1,10 +1,10 @@
-FROM rust:1.73-slim-buster as builder
-RUN rustup target add wasm32-unknown-unknown
-RUN cargo install trunk
-COPY . .
+# The base builder will have trunk installed
+FROM us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-client-base-builder as builder
 WORKDIR /track
+COPY . .
+RUN ls -la
+RUN ls -la web-client/
 RUN trunk build web-client/index.html # Build once so that dependencies are cached
 RUN rm -rf web-client/dist # The built files are not needed in the final image
 
-# Changes to this file will cause the workflow to rebuild the builder image
-# Rebuild=1
+# Upload this image as track-client-builder

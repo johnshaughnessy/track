@@ -26,6 +26,7 @@ jobs:
   deploy_static_files:
     needs: validate
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.env }}
     steps:
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
@@ -40,6 +41,12 @@ jobs:
       - name: Determine latest web-client tarball
         id: latest-tarball
         run: |
+
+          # Authenticate with GCP
+          echo '${{ secrets.GCP_SA_KEY }}' > /tmp/gcp-sa-key.json
+          gcloud auth activate-service-account --key-file=/tmp/gcp-sa-key.json
+          rm /tmp/gcp-sa-key.json $BACKUP_NAME
+
           LATEST_TARBALL=$(gsutil ls gs://ocho-osai/track/web-client-builds/ | sort | tail -n1)
           echo "Latest tarball: $LATEST_TARBALL"
           echo "::set-output name=tarball::$LATEST_TARBALL"

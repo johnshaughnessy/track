@@ -1,0 +1,5 @@
+FROM rust:1.73-slim-buster as base-builder
+RUN rustup target add wasm32-unknown-unknown
+RUN cargo install trunk
+# Upload this image as track-client-base-builder
+# rebuild=2
