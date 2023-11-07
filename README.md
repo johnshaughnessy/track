@@ -45,3 +45,19 @@ dc up -d --build
 
 The web client is available at [http://localhost:8888](http://localhost:8888).
 The server apis are available at [http://localhost:8080/api](http://localhost:8080/api).
+
+Alternatively, you can start the server with:
+
+```sh
+dc exec -it track-server bash
+
+APP_ENV="development" cargo run --bin server
+```
+
+And the client with
+
+```sh
+dc exec -it track-web-client bash
+
+trunk serve web-client/index.html --address 0.0.0.0 --port 8888
+```

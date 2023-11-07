@@ -1,41 +1,58 @@
-use yew::{html, Component, Context, Html};
+use gloo_net::http::Request;
+use serde::Deserialize;
+use wasm_bindgen_futures::spawn_local;
+use yew::prelude::*;
 
-pub enum Msg {
-    Increment,
-}
+#[function_component]
+fn App() -> Html {
+    let counter = use_state(|| 0);
+    let weights = use_state(|| vec![]);
 
-pub struct App {
-    value: i64, // This will store the counter value
-}
+    let onclick = {
+        let counter = counter.clone();
+        move |_| {
+            counter.set(*counter + 1);
+        }
+    };
 
-impl Component for App {
-    type Message = Msg;
-    type Properties = ();
+    let fetch_weights = {
+        let weights = weights.clone();
+        Callback::from(move |_| {
+            let weights = weights.clone();
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self { value: 0 }
-    }
+            wasm_bindgen_futures::spawn_local(async move {
+                let fetched_weights: Vec<Weight> =
+                    Request::get("http://localhost:8080/api/weights")
+                        .send()
+                        .await
+                        .unwrap()
+                        .json()
+                        .await
+                        .unwrap();
+                weights.set(fetched_weights);
+            });
+        })
+    };
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        html! {
+    html! {
+        <div>
+            <button {onclick}>{ "+1" }</button>
+            <button onclick={fetch_weights}>{ "Fetch Weights" }</button>
+            <p>{ *counter }</p>
             <div>
-                <button
-                    onclick={ctx.link().callback(|_| Msg::Increment)}
-                >{ "Increment" }</button>
-                <p>{ self.value }</p>
+                { for (*weights).iter().map(|weight| html! {
+                    <p>{ format!("Weight: {}", weight.weight_kg) }</p>
+                })}
             </div>
-        }
-    }
-
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::Increment => {
-                self.value += 1;
-                true // Indicate that the component should re-render
-            }
-        }
+        </div>
     }
 }
+
+#[derive(Deserialize, Debug)]
+struct Weight {
+    weight_kg: f64,
+}
+
 fn main() {
     yew::Renderer::<App>::new().render();
 }
