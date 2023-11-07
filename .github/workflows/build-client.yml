@@ -22,15 +22,15 @@ jobs:
               - 'web-client/Cargo.lock'
               - 'web-client/Dockerfile.builder'
 
-      - id: "auth"
+      - id: auth
         if: steps.changes.outputs.lock == 'true'
-        uses: "google-github-actions/auth@v1"
+        uses: google-github-actions/auth@v1
         with:
-          credentials_json: "${{ secrets.GCP_SA_KEY }}"
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: "Set up Cloud SDK"
+      - name: Set up Cloud SDK
         if: steps.changes.outputs.lock == 'true'
-        uses: "google-github-actions/setup-gcloud@v1"
+        uses: google-github-actions/setup-gcloud@v1
 
       - name: Configure Docker to use Google Artifact Registry
         if: steps.changes.outputs.lock == 'true'
@@ -39,47 +39,42 @@ jobs:
       - name: Build Base Builder Image
         if: steps.changes.outputs.lock == 'true'
         run: |
-          cd web-client
-          docker build -f Dockerfile.builder --target builder -t us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-client-builder .
+          docker build -f web-client/Dockerfile.builder --target builder -t us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-client-builder .
           docker push us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-client-builder
 
   build_client:
     runs-on: ubuntu-latest
     needs: build_docker_image_track_client_builder
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - id: "auth"
-        uses: "google-github-actions/auth@v1"
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v1
         with:
-          credentials_json: "${{ secrets.GCP_SA_KEY }}"
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: "Set up Cloud SDK"
-        uses: "google-github-actions/setup-gcloud@v1"
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
 
       - name: Configure Docker to use Google Artifact Registry
         run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
-      # Run the Docker container to build the web-client
+      - name: Generate short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
       - name: Build web-client
         run: |
-          docker run --rm -v $(pwd):/track -w /track us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-client-builder sh -c "trunk build web-client/index.html"
+          docker run --rm -v $PWD:/track -w /track us-central1-docker.pkg.dev/hubs-dev-333333/ocho-osai/johnshaughnessy/track/track-client-builder sh -c "trunk build web-client/index.html"
 
-      - name: Build static files and upload
+      - name: Build static files
         run: |
           ls -l web-client/dist
-          tar -czvf web-client.tar.gz web-client/dist
-          mv web-client.tar.gz web-client-${GITHUB_SHA:0:7}.tar.gz
+          tar -czvf web-client.tar.gz -C web-client/dist .
+          mv web-client.tar.gz "web-client-${{ env.SHORT_SHA }}.tar.gz"
 
       - name: Upload to GCS
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          path: "web-client-${GITHUB_SHA:0:7}.tar.gz"
-          destination: "ocho-osai/track/web-client-builds/web-client-${GITHUB_SHA:0:7}.tar.gz"
-
-      - name: Build web-client
-        run: |
-          echo "File in bucket:"
-          gsutil ls gs://ocho-osai/track/web-client-builds/web-client-${GITHUB_SHA:0:7}.tar.gz
+          path: "web-client-${{ env.SHORT_SHA }}.tar.gz"
+          destination: "gs://ocho-osai/track/web-client-builds/web-client-${{ env.SHORT_SHA }}.tar.gz"
