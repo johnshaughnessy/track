@@ -59,6 +59,9 @@ jobs:
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v1"
 
+      - name: Configure Docker to use Google Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
       # Run the Docker container to build the web-client
       - name: Build web-client
         run: |
