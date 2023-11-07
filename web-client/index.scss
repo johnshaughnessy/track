@@ -64,17 +64,6 @@ $themes: (
   --shadow-color: #{map-get($theme-map, shadow-color)};
 }
 
-// @mixin apply-theme($theme-name) {
-//   $theme-map: map-get($themes, $theme-name);
-//   --primary-bg-color: map-get($theme-map, primary-bg-color);
-//   --danger-bg-color: map-get($theme-map, danger-bg-color);
-//   --info-bg-color: map-get($theme-map, info-bg-color);
-//   --text-color: map-get($theme-map, text-color);
-//   --button-text-color: map-get($theme-map, button-text-color);
-//   --item-bg-color: map-get($theme-map, item-bg-color);
-//   --shadow-color: map-get($theme-map, shadow-color);
-// }
-
 :root {
   @include apply-theme(gruvbox); // Default theme
 }
@@ -101,7 +90,7 @@ $themes: (
 
 .weight-app {
   font-family: "Arial", sans-serif;
-  max-width: 600px;
+  max-width: 512px;
   margin: 0 auto;
   padding: 10px;
 
@@ -138,30 +127,29 @@ $themes: (
       padding: 10px;
       box-shadow: 0 2px 4px var(--shadow-color);
       display: flex;
-      justify-content: space-between; // Spread content across the card
+      justify-content: space-between;
       align-items: center;
 
       .weight-details {
-        display: flex; // Use flex for laying out details
+        display: flex;
         align-items: center;
-        flex-grow: 1; // Allow details to fill available space
+        flex-grow: 1;
 
         .weight-lbs,
         .weight-date {
-          font-size: 18px; // Larger font size for readability
+          font-size: 18px;
           color: var(--text-color);
-          margin: 0 10px; // Add horizontal spacing
+          margin: 0 20px;
         }
       }
 
       .weight-actions {
         display: flex;
-        // No need for margin-top as they are on the same row now
 
         .delete-button,
         .edit-button {
-          padding: 8px 12px; // Adjust padding for a balanced look
-          margin-left: 10px; // Keep space between buttons
+          padding: 8px 12px;
+          margin-left: 10px;
           border-radius: 5px;
           border: none;
           cursor: pointer;

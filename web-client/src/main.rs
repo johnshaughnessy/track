@@ -157,8 +157,8 @@ fn App() -> Html {
                                 <p class="weight-date">{ format!("{}", formatted_time) }</p>
                             </div>
                             <div class="weight-actions">
-                                <button class="delete-button" onclick={delete_callback}>{ "Delete" }</button>
                                 <button class="edit-button" onclick={edit_callback}>{ "Edit" }</button>
+                                <button class="delete-button" onclick={delete_callback}>{ "Delete" }</button>
                             </div>
                         </div>
                     }
